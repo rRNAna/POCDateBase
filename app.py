@@ -19,7 +19,7 @@ import sqlite3
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 0.1.0                                                       #
+# VERSION: 1.0.0                                                       #
 #                                                                      #
 ########################################################################
 
