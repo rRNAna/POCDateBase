@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}POC Database{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+    <style>{% block style %}{% endblock %}</style>
+</head>
+<body>
+    <header>
+        <nav id="navbar">
+        <div class="nav-container">
+            <a href="/">Home</a>
+            <a href="/spec_cpu2017">SPEC CPU2017</a>
+            <a href="/hpl">HPL</a>
+            <a href="/unixbench">UnixBench</a>
+            <a href="/stream">Stream</a>
+            <a href="/cvt_mlc">AMD CVT & Intel MLC</a>
+            <a href="/lmbench">Lmbench</a>
+            <a href="/sysbench">Sysbench</a>
+        </div>
+    </nav>
+    </header>
+
+    <!-- 页面内容 -->
+    <main class="content">
+        {% block content %}<dev>Welcome to POC_DataBase!</dev>{% endblock %}
+    </main>
+
+    <!-- 页脚 -->
+    <footer id="footer">
+        <p>&copy; 2025 New H3C Technologies Co., Ltd.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
+

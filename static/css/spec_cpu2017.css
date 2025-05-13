@@ -1,0 +1,8 @@
+/* spec_cpu2017.css */
+/* 导入 base.css 以继承其样式 */
+@import url('base.css');
+
+/* 将None值的文字设置为灰色 */
+.none-value {
+    color: #d3d3d3;  /* 浅灰色文字 */
+}

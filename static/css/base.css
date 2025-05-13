@@ -1,0 +1,116 @@
+/* 基本样式 */
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+header {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+/* 设置导航栏 */
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    padding: 20px;
+    transition: padding 0.3s, background-color 0.3s; /* 动画效果 */
+    z-index: 1000; /* 确保导航栏在最上层 */
+}
+
+/* 导航栏容器 */
+.nav-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    transition: color 0.3s;
+}
+
+nav a:hover {
+    color: #f2f2f2;
+}
+
+
+/* 页面表格样式 */
+table {
+    width: 100%;
+    border-collapse: collapse;  /* 让表格单元格的边框合并 */
+}
+
+th, td {
+    padding: 8px;
+    border: 1px solid black;  /* 设置细黑色边框 */
+}
+
+th {
+    background-color: #f2f2f2;
+    text-align: left;
+}
+
+.none-value {
+    color: #808080;  /* 设置文字颜色为浅灰色 */
+}
+
+footer {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
+
+main {
+    padding: 20px;
+}
+
+h2 {
+    color: #333;
+}
+
+/* 页脚样式 */
+footer {
+    width: 100%;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    position: absolute;
+    bottom: 0;
+}
+
+/* 页面内容 */
+.content {
+    padding-top: 100px; /* 留出空间，避免内容被固定的导航栏遮挡 */
+}
+
+/* 页面滚动时导航栏变小 */
+nav.smaller {
+    padding: 10px; /* 减小导航栏的高度 */
+    background-color: #222; /* 修改背景颜色 */
+}
+
+/* 页面内容区域 */
+.content {
+    padding-bottom: 100px; /* 确保页脚不会遮挡内容 */
+}
+
+/* 页脚始终位于页面底部 */
+footer {
+    position: relative;
+    margin-top: 20px;
+}
