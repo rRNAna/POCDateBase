@@ -1,10 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block title %}Stream Benchmark{% endblock %}
+
+{% block style %}
+    a{
+        text-decoration:none;
+        color:inherit;
+        cursor:auto;
+    }
+    .highlight {
+    color: #EE220C;
+    font-weight: bold;
+}
+{% endblock %}
+
+{% block content %}
+  <h2>Stream Benchmark Data</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>CPU Model</th>
+                <th>Copy</th>
+                <th>Scale</th>
+                <th>Add</th>
+                <th>Triad</th>
+                <th>Percevtage</th>
+                <th>Compiler</th>
+                <th>Threads</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for cpu_key, group in grouped_data.items() %}
+            <tr>
+                <td colspan="8"><strong>{{ cpu_key[0] }} - {{ cpu_key[1] }}</strong></td>
+            </tr>
+            {% for row in group %}
+            <tr>
+                <td>{{ row['cpu_model'] }}</td>
+                <td>{{ row['stream_copy'] }}</td>
+                <td>{{ row['stream_scale'] }}</td>
+                <td>{{ row['stream_add'] }}</td>
+                <td>{{ row['stream_triad'] }}</td>
+                <td {% if row.theoretical_bw is not none %} title="{{ '%.1f'|format(row.theoretical_bw) }} MB/s" {% endif %}>
+                    {% if row.bw_pct is not none %}
+                        {{ '%.2f'|format(row.bw_pct) }}%
+                    {% else %}
+                        NA
+                    {% endif %}
+                </td>
+                <td>{{ row['compiler'] }}</td>
+                <td>{{ row['stream_threads'] }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+{% endblock %}
