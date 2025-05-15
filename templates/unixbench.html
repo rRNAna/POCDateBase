@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}UnixBench System Benchmarks Index Scores{% endblock %}
+
+{% block style %}
+    a{
+        text-decoration:none;
+        color:inherit;
+        cursor:auto;
+    }
+    .highlight {
+    color: #EE220C;
+    font-weight: bold;
+}
+{% endblock %}
+
+{% block content %}
+  <h2>UnixBench System Benchmarks Index Scores</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>CPU Model</th>
+                <th>Score</th>
+                <th>Threads</th>
+                <th>Compiler</th>
+
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for cpu_key, group in grouped_data.items() %}
+            <tr>
+                <td colspan="8"><strong>{{ cpu_key[0] }} - {{ cpu_key[1] }}</strong></td>
+            </tr>
+            {% for row in group %}
+            <tr>
+                <td>{{ row['cpu_model'] }}</td>
+                <td>{{ row['score'] }}</td>
+                <td>{{ row['threads'] }}</td>
+                <td>{{ row['compiler'] }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+{% endblock %}

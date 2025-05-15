@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Mar 13, 2025.
+# Creation Date : Mar 14, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -21,7 +21,7 @@ import sqlite3
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.1.0                                                       #
+# VERSION: 1.2.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -152,6 +152,60 @@ def stream():
 
     # 渲染模板，把分组后的字典传进去
     return render_template('stream.html', grouped_data=grouped)
+
+
+# UnixBench 数据显示路由
+@app.route('/unixbench')
+def unixbench():
+    conn = get_db_connection()
+
+    if conn is None:
+        return "Database connection error", 500
+
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM Unixbench_database ORDER BY cpu_model DESC, submitter DESC')  # 获取所有数据
+    rows = cursor.fetchall()  # 获取所有记录
+
+    if not rows:
+        print("No data returned from database")
+        return "No data available", 404
+
+    conn.close()
+
+    # 按 cpu_model, cpu_count, compiler 分组
+    grouped = {}
+    for item in rows:
+        key = (item['cpu_model'], item['cpu_count'], item['compiler'])
+        grouped.setdefault(key, []).append(item)
+    # 渲染网页模版，传入分组数据
+    return render_template('unixbench.html', grouped_data=grouped)
+
+# HPL 数据显示路由
+@app.route('/hpl')
+def hpl():
+    conn = get_db_connection()
+
+    if conn is None:
+        return "Database connection error", 500
+
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM HPL_database ORDER BY cpu_model DESC, submitter DESC')  # 获取所有数据
+    rows = cursor.fetchall()  # 获取所有记录
+
+    if not rows:
+        print("No data returned from database")
+        return "No data available", 404
+
+    conn.close()
+
+    # 按 cpu_model 分组
+    grouped = {}
+    for item in rows:
+        cpu = item['cpu_model']
+        grouped.setdefault(cpu, []).append(item)
+
+    # 渲染网页模版，传入分组数据
+    return render_template('hpl.html', grouped_data=grouped)
 
 
 if __name__ == '__main__':

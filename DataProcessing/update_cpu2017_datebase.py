@@ -1,3 +1,14 @@
+#!/usr/bin/env python3.12
+#########################################################################################################
+#
+# Filename      : update_cpu2017_datenase.py
+# Creation Date : Mar 15, 2025.
+# Author: rRNA
+# Description   :
+#
+#
+#
+###########################################################################################################
 import os
 import logging
 import glob
@@ -8,7 +19,19 @@ import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, MetaData, Table, and_
 from apscheduler.schedulers.blocking import BlockingScheduler
+########################################################################
+#                                                                      #
+#                                                                      #
+# Copyright New H3C Technologies Co., Ltd.                             #
+#                                                                      #
+# PURPOSE: See description above.                                      #
+#                                                                      #
+# VERSION: 1.1.0                                                       #
+#                                                                      #
+########################################################################
 
+###########################################################################################################
+###########################################################################################################
 # —— 全局配置 ——
 # 需要下载的全部 CPU 型号列表
 CPU_MODEL_LIST = [
@@ -71,14 +94,21 @@ def process_csv(input_csv_path: str):
     # 原始提交厂商映射为简写 submitter 名称
     vendor_map = {
         'ASUSTeK Computer Inc.': 'ASUS',
+        'Cisco Systems': 'Cisco',
         'Dell Inc.': 'Dell',
         'GIGA-BYTE TECHNOLOGY CO., LTD.': 'Gigabyte',
         'IEIT Systems Co., Ltd.': 'Inspur',
+        'Inspur Electronic Information Industry Co., Ltd. (IEI)': 'Inspur',
         'Kaytus Systems Pte. Ltd.': 'Inspur',
         'Lenovo Global Technology': 'Lenovo',
         'Supermicro': 'Supermicro',
+        'xFusion': 'xFusion',
         'New H3C Technologies Co., Ltd.': 'H3C',
-        'Quanta Cloud Technology': 'Quanta'
+        'Quanta Cloud Technology': 'Quanta',
+        'Tyrone Systems': 'Tyron',
+        'Epsylon Sp. z o.o. Sp. Komandytowa': 'Epsylon',
+        'Fujitsu': 'Fujitsu',
+
     }
 
     # 对应基准名到数据库字段名
@@ -109,7 +139,7 @@ def process_csv(input_csv_path: str):
     df['cpu_count'] = df['# Chips']
 
     # 提取 CPU 型号
-    df['CPU Model'] = df['Processor'].str.strip()
+    df['cpu_model'] = df['Processor'].str.strip()
 
     # 提取 URL 末尾路径并补全为完整链接
     def extract_url(raw):
@@ -130,17 +160,17 @@ def process_csv(input_csv_path: str):
         # 过滤该类 benchmark
         df_bench = df[df["Benchmark"] == benchmark].copy()
 
-        # 按 submitter, cpu_count 选最大 Base Result
+        # 按 cpu_model, submitter, cpu_count 选最大 Base Result
         df_bench["Base Result"] = pd.to_numeric(df_bench["Base Result"], errors="coerce")
-        idx = df_bench.groupby(['submitter', 'cpu_count'])['Base Result'].idxmax()
+        idx = df_bench.groupby(['cpu_model', 'submitter', 'cpu_count'])['Base Result'].idxmax()
         df_max = df_bench.loc[idx]
 
         for _, row in df_max.iterrows():
-            key = (row['CPU Model'], row['submitter'], row['cpu_count'])
+            key = (row['cpu_model'], row['submitter'], row['cpu_count'])
 
             if key not in results:
                 results[key] = {
-                    "CPU Model": row['CPU Model'],
+                    "cpu_model": row['cpu_model'],
                     "submitter": row['submitter'],
                     "cpu_count": row['cpu_count'],
                     "Machine Name": row['System'],
@@ -160,7 +190,7 @@ def process_csv(input_csv_path: str):
 
     # 指定列的顺序
     column_order = [
-        "CPU Model",
+        "cpu_model",
         "submitter",
         "SPECspeed(r)2017_int_base",
         "SPECspeed(r)2017_fp_base",
@@ -266,7 +296,7 @@ def compare_and_update(processed_csv: str):
     upd_rows = off_idx.loc[common_index[diff_mask]].reset_index()
 
     # 补充逻辑：new_rows 中 compiler 为空时填充 'unknown'
-    new_rows.loc[:, 'compiler'] = new_rows['compiler'].fillna('unknown')
+    new_rows['compiler'] = new_rows['compiler'].astype('string').fillna('unknown')
     logging.info(f'New records: {len(new_rows)} records; records to be updated: {len(upd_rows)} records.')
 
     # 6) 用 Core API 插入 & 更新
@@ -348,11 +378,11 @@ if __name__ == '__main__':
     # 下载并整合官网所有数据
     merged_csv_path = download_spec_csv(DOWNLOAD_DIR)
     # 对整个数据处理
+    # merged_csv_path = "./downloads/merged.csv"
     final_cleaned_csv_path = process_csv(merged_csv_path)
     # final_cleaned_csv_path = "./downloads/final_cleaned_results.csv"
     # 将处理后的数据更新到数据库
     compare_and_update(final_cleaned_csv_path)
-
 
     # 定时调度，每两周执行一次
     # scheduler = BlockingScheduler(timezone="Asia/Tokyo")

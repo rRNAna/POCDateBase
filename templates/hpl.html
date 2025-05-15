@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}HPL Gflops{% endblock %}
+
+{% block style %}
+    a{
+        text-decoration:none;
+        color:inherit;
+        cursor:auto;
+    }
+    .highlight {
+    color: #EE220C;
+    font-weight: bold;
+}
+{% endblock %}
+
+{% block content %}
+  <h2>HPL Gflops</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>CPU Model</th>
+                <th>Gflops</th>
+                <th>CPU Count</th>
+
+
+            </tr>
+        </thead>
+        <tbody>
+
+            {% for cpu_key, group in grouped_data.items() %}
+            <tr>
+                <td colspan="8"><strong>{{ cpu_key }}</strong></td>
+            </tr>
+            {% for row in group %}
+            <tr>
+                <td>{{ row['cpu_model'] }}</td>
+                <td>{{ row['gflops'] }}</td>
+                <td>{{ row['cpu_count'] }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+{% endblock %}
