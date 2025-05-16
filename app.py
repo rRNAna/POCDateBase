@@ -11,9 +11,12 @@
 ###########################################################################################################
 import subprocess
 
-from flask import Flask, render_template, request, redirect, render_template_string, url_for
+from flask import Flask, render_template, request, redirect, render_template_string, url_for, abort
 from flask_bootstrap import Bootstrap
 import sqlite3
+
+from sqlalchemy.orm.session import Session
+
 ########################################################################
 #                                                                      #
 #                                                                      #
@@ -206,6 +209,103 @@ def hpl():
 
     # 渲染网页模版，传入分组数据
     return render_template('hpl.html', grouped_data=grouped)
+
+
+@app.route('/cvt_mlc')
+def cvt_mlc():
+    conn = get_db_connection()
+
+    if conn is None:
+        return "Database connection error", 500
+
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM CVT_MLC_meta_Information ORDER BY cpu_model DESC')  # 获取所有数据
+    rows = cursor.fetchall()  # 获取所有记录
+
+    if not rows:
+        print("No data returned from database")
+        return "No data available", 404
+
+    conn.close()
+
+
+    # 按 cpu_model 分组
+    # grouped = {}
+    # for item in rows:
+    #     cpu = item['cpu_model']
+    #     grouped.setdefault(cpu, []).append(item)
+
+    # 渲染网页模版，传入分组数据
+    return render_template('cvt_mlc.html', runs=rows)
+    # return render_template('cvt_mlc.html', grouped_data=grouped)
+
+@app.route('/cvt_mlc/<int:run_id>')
+def show_run(run_id):
+    conn = get_db_connection()
+    if conn is None:
+        abort(500, "Database connection error")
+    cur = conn.cursor()
+
+    # 1）查元信息
+    cur.execute(
+        'SELECT * FROM CVT_MLC_meta_information WHERE id = ?',
+        (run_id,)
+    )
+    meta = cur.fetchone()
+    if meta is None:
+        conn.close()
+        abort(404, "Run not found")
+
+    # 2）查节点延迟
+    cur.execute(
+        'SELECT source_node, target_node, latency_ns '
+        'FROM NodeLatency WHERE meta_id = ? '
+        'ORDER BY source_node, target_node',
+        (run_id,)
+    )
+    latencies = cur.fetchall()  # List[sqlite3.Row]
+
+    # 3）查注入延迟 & 带宽
+    cur.execute(
+        'SELECT delay_ns, loaded_latency_ns, bandwidth_mb_s '
+        'FROM InjectionMetrics WHERE meta_id = ? '
+        'ORDER BY delay_ns',
+        (run_id,)
+    )
+    injections = cur.fetchall()
+
+    # 4）查节点带宽
+    cur.execute(
+        'SELECT source_node, target_node, bandwidth_mb_s '
+        'FROM NodeBandwidth WHERE meta_id = ? '
+        'ORDER BY source_node, target_node',
+        (run_id,)
+    )
+    bandwidths = cur.fetchall()
+
+    conn.close()
+
+    # 5）组织矩阵数据
+    nodes = sorted({row['source_node'] for row in latencies} |
+                   {row['target_node'] for row in latencies})
+    latency_matrix = {
+        (r['source_node'], r['target_node']): r['latency_ns']
+        for r in latencies
+    }
+    bandwidth_matrix = {
+        (r['source_node'], r['target_node']): r['bandwidth_mb_s']
+        for r in bandwidths
+    }
+
+    # 6）渲染模板，Row 对象直接能用 row['col'] 取值
+    return render_template(
+        'run_detail.html',
+        meta=meta,
+        nodes=nodes,
+        latency_matrix=latency_matrix,
+        injections=injections,
+        bandwidth_matrix=bandwidth_matrix
+    )
 
 
 if __name__ == '__main__':

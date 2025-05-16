@@ -17,8 +17,8 @@ import requests
 import pandas as pd
 
 from datetime import datetime
-from sqlalchemy import create_engine, MetaData, Table, and_
-from apscheduler.schedulers.blocking import BlockingScheduler
+from sqlalchemy import create_engine, MetaData, and_
+
 ########################################################################
 #                                                                      #
 #                                                                      #
@@ -26,7 +26,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.1.0                                                       #
+# VERSION: 1.2.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -264,7 +264,12 @@ def compare_and_update(processed_csv: str):
         'speed_int_base',
         'speed_fp_base',
         'rate_int_base',
-        'rate_fp_base'
+        'rate_fp_base',
+        'speed_int_url',
+        'speed_fp_url',
+        'rate_int_url',
+        'rate_fp_url',
+        'machine_name'
     ]
 
     # —— 新增：去重，确保每个业务主键只有一条记录 ——
