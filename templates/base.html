@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}POC Database{% endblock %}</title>
+    <title>{% block title %}About —— POC Database{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
     <style>{% block style %}{% endblock %}</style>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
     <header>
         <nav id="navbar">
         <div class="nav-container">
@@ -24,11 +24,33 @@
 
     <!-- 页面内容 -->
     <main class="content">
-        {% block content %}<dev>Welcome to POC_DataBase!</dev>{% endblock %}
+        {% block content %}
+        <div>
+            <h1>POC_DataBase</h1>
+            <p><strong>版本：</strong>{{ version }}</p>
+            <p><strong>作者：</strong>{{ author }}</p>
+            <p><strong>联系方式：</strong><a href="mailto:{{ contact }}">{{ contact }}</a></p>
+
+            <h2>项目简介</h2>
+            <p>{{ description }}</p>
+
+            <h2>开发进度</h2>
+            <ul>
+                <li>✔ 已完成 SPEC CPU2017 数据抓取与同步</li>
+                <li>✔ /spec_cpu2017 页面：按 CPU 模糊搜索并高亮最大值</li>
+                <li>✔ /stream 页面：显示 Stream triad 百分比</li>
+                <li>…（后续功能）</li>
+            </ul>
+
+            <h2>其它</h2>
+            <p>后台数据库：SQLite + SQLAlchemy Core API</p>
+            <p>前端框架：Flask + Jinja2 + Bootstrap</p>
+        </div>
+        {% endblock %}
     </main>
 
     <!-- 页脚 -->
-    <footer id="footer">
+    <footer id="footer" class="mt-auto bg-dark text-white text-center py-3">
         <p>&copy; 2025 New H3C Technologies Co., Ltd.</p>
     </footer>
 

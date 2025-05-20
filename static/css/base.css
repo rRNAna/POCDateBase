@@ -1,116 +1,144 @@
-/* 基本样式 */
-body, html {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+/* —— 全局 reset & 100% 高度 —— */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
 
-header {
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    text-align: center;
-}
-
-/* 设置导航栏 */
+/* —— 导航规则 —— */
 nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background-color: #333;
-    color: white;
-    padding: 20px;
-    transition: padding 0.3s, background-color 0.3s; /* 动画效果 */
-    z-index: 1000; /* 确保导航栏在最上层 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: #333;   /* 深色背景 */
+  color: white;
+  padding: 20px;
+  transition: padding 0.3s, background-color 0.3s;
+  z-index: 1000;
 }
-
-/* 导航栏容器 */
 .nav-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
 }
-
 nav a {
-    color: white;
-    text-decoration: none;
-    font-size: 18px;
-    transition: color 0.3s;
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
 }
-
 nav a:hover {
-    color: #f2f2f2;
+  color: #f2f2f2;
 }
 
+/* —— 然后把 body 设为列向 Flex —— */
+body {
+  display: flex;
+  flex-direction: column;
+}
 
-/* 页面表格样式 */
+/* —— 留出顶部导航高度 —— */
+main.content {
+  flex: 1 0 auto;       /* 把 main 拉满剩余空间 */
+  margin-top: 80px;     /* 导航大概 60–80px 高，留空 */
+  padding: 20px;
+}
+
+/* —— footer 永远贴底 —— */
+footer {
+  margin-top: auto;     /* 关键：把 footer 推到最底部 */
+  width: 100%;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+/* —— 标题样式 —— */
+.content h1 {
+  font-size: 2rem;         /* 调大标题 */
+  margin: 1.5rem 0 1rem;   /* 上下留白：上 1.5rem，下 1rem */
+  line-height: 1.2;        /* 行高稍微紧凑些 */
+}
+
+/* —— 搜索区 —— */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;           /* 输入框和按钮之间留点空 */
+  margin-bottom: 1.5rem; /* 搜索区底部留空 */
+}
+
+.search-bar input[type="text"] {
+  padding: 0.5rem;
+  font-size: 1rem;
+  width: 240px;          /* 或根据需要调整 */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-bar button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.search-bar button:hover {
+  background-color: #555;
+}
+
+/* —— 表格整体固定布局，便于列宽分配 —— */
 table {
-    width: 100%;
-    border-collapse: collapse;  /* 让表格单元格的边框合并 */
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;        /* 启用固定布局，各列平均分配或按你指定的 width */
+}
+
+/* —— 单元格基础样式 —— */
+th, td {
+  padding: 12px 8px;          /* 上下 12px，左右 8px */
+  border: 1px solid #ccc;
+  vertical-align: top;        /* 顶部对齐，方便多行文本阅读 */
+  word-wrap: break-word;      /* 长文本自动换行 */
+  white-space: normal;        /* 允许换行 */
+}
+
+/* —— 表头额外样式 —— */
+th {
+  background-color: #f2f2f2;
+  font-size: 0.95rem;         /* 略微缩小字体 */
+  text-align: left;
+  line-height: 1.3;           /* 行高加大，防止行间拥挤 */
+}
+
+/* —— 根据需要，可以单独为某些列指定最小宽度 —— */
+th:nth-child(1) { min-width: 150px; }  /* CPU Model 列 */
+th:nth-child(2) { min-width: 120px; }  /* Submitter 列 */
+th:nth-child(3) { min-width: 80px; }   /* CPU Count 列 */
+
+/* —— 让表格更紧凑 —— */
+table {
+  table-layout: auto;    /* 回到自动布局，让列宽随内容浮动 */
 }
 
 th, td {
-    padding: 8px;
-    border: 1px solid black;  /* 设置细黑色边框 */
+  padding: 4px 6px !important;   /* 上下 4px、左右 6px，快速收窄 */
+  font-size: 0.85rem !important; /* 略微缩小文字 */
+  line-height: 1.2 !important;   /* 减小行高 */
 }
 
 th {
-    background-color: #f2f2f2;
-    text-align: left;
+  background-color: #f9f9f9;     /* 可选：浅一点减少视觉重量 */
 }
 
-.none-value {
-    color: #808080;  /* 设置文字颜色为浅灰色 */
+.search-bar {
+  margin-bottom: 0.5rem !important; /* 搜索区也收紧点 */
 }
 
-footer {
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    text-align: center;
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-}
-
-main {
-    padding: 20px;
-}
-
-h2 {
-    color: #333;
-}
-
-/* 页脚样式 */
-footer {
-    width: 100%;
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 20px;
-    position: absolute;
-    bottom: 0;
-}
-
-/* 页面内容 */
-.content {
-    padding-top: 100px; /* 留出空间，避免内容被固定的导航栏遮挡 */
-}
-
-/* 页面滚动时导航栏变小 */
-nav.smaller {
-    padding: 10px; /* 减小导航栏的高度 */
-    background-color: #222; /* 修改背景颜色 */
-}
-
-/* 页面内容区域 */
-.content {
-    padding-bottom: 100px; /* 确保页脚不会遮挡内容 */
-}
-
-/* 页脚始终位于页面底部 */
-footer {
-    position: relative;
-    margin-top: 20px;
+.content h1 {
+  font-size: 1.5rem !important;   /* 主标题稍微小一点 */
+  margin: 1rem 0 0.5rem !important;
 }

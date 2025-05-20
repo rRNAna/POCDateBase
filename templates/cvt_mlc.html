@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}AMD CVT & Intel MLC{% endblock %}
+
+{% block style %}
+    a{
+        text-decoration:none;
+        color:inherit;
+        cursor:auto;
+    }
+    .highlight {
+    color: #EE220C;
+    font-weight: bold;
+}
+{% endblock %}
+
+{% block content %}
+    <h2>AMD CVT & Intel MLC</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>CPU Model</th><th>Tool</th><th>CPU Count</th><th>Submitter</th><th>Machine</th><th>Options</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for run in runs %}
+        <tr>
+          <td>{{ run.id }}</td>
+          <td>{{ run.cpu_model }}</td>
+          <td>{{ run.tool_name }}</td>
+          <td>{{ run.cpu_count }}</td>
+          <td>{{ run.submitter }}</td>
+          <td>{{ run.machine_name }}</td>
+          <td><a href="{{ url_for('show_cvt_mlc_run', run_id=run.id) }}">check the details</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+{% endblock %}

@@ -11,7 +11,7 @@
 ###########################################################################################################
 import subprocess
 
-from flask import Flask, render_template, request, redirect, render_template_string, url_for, abort
+from flask import Flask, render_template, request, redirect, render_template_string, url_for, abort, current_app
 from flask_bootstrap import Bootstrap
 import sqlite3
 
@@ -47,7 +47,12 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return render_template('base.html')
+    return render_template('base.html',
+                           version='v1.3.0',
+                           author='rRNA',
+                           contact='rasdasto857@gmail.com',
+                           description='这是 POC_DataBase 的信息页。'
+                           )
 
 
 # @app.route('/search', methods=['POST'])
@@ -73,45 +78,93 @@ def index():
 #     ''', items=items)
 
 # SPEC CPU2017 数据显示路由
-@app.route('/spec_cpu2017')
+@app.route('/spec_cpu2017', methods=['GET'])
 def spec_cpu2017():
+    cpu_input = request.args.get('cpu_model', '') or ''
+    cpu_input = cpu_input.strip()
+    current_app.logger.info(f"User search input: '{cpu_input}'")
+
+    cpu_model = request.args.get('cpu_model', '').strip()
+
     conn = get_db_connection()
 
     if conn is None:
         return "Database connection error", 500
 
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Turin_CPU2017_database ORDER BY cpu_model DESC, submitter DESC')  # 获取所有数据
-    rows = cursor.fetchall()  # 获取所有记录
 
-    if not rows:
-        print("No data returned from database")
-        return "No data available", 404
+    rows = []
+    if cpu_input:
+        # 调试：打印所有可选的 cpu_model 值
+        cursor.execute("SELECT DISTINCT cpu_model FROM Turin_CPU2017_database")
+        all_models = [r['cpu_model'].strip() for r in cursor.fetchall()]
+        current_app.logger.info(f"Available cpu_model values: {all_models}")
 
+        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
+        pattern = f"%{cpu_input}%"
+        current_app.logger.info(f"Querying with pattern: '{pattern}'")
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM Turin_CPU2017_database
+            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
+            ORDER BY cpu_model DESC, submitter DESC
+            """,
+            (pattern,)
+        )
+        rows = cursor.fetchall()
+
+    # if cpu_model:
+    #     pattern = f'%{cpu_model}%'
+    #     cursor.execute(
+    #         'SELECT * FROM Turin_CPU2017_database WHERE cpu_model = ? ORDER BY cpu_model DESC, submitter DESC',
+    #         (pattern,)
+    #     )
+    #     rows = cursor.fetchall()
+    # else:
+    #     rows = []
     conn.close()
 
     # 按照 CPU Model 、 CPU Count 和 Compiler 分组
     grouped_data = {}
-    for row in rows:
-        cpu_key = (row['cpu_model'], row['cpu_count'], row['compiler'])
-        if cpu_key not in grouped_data:
-            grouped_data[cpu_key] = []
-        grouped_data[cpu_key].append(row)
-
-    # 对每个分组的数据进行处理，找出最大值并标记
     max_values = {}
-    for key, group in grouped_data.items():
-        max_values[key] = {
-            'speed_int_base': max([row['speed_int_base'] for row in group if row['speed_int_base'] is not None],
-                                  default=None),
-            'speed_fp_base': max([row['speed_fp_base'] for row in group if row['speed_fp_base'] is not None],
-                                 default=None),
-            'rate_int_base': max([row['rate_int_base'] for row in group if row['rate_int_base'] is not None],
-                                 default=None),
-            'rate_fp_base': max([row['rate_fp_base'] for row in group if row['rate_fp_base'] is not None], default=None)
-        }
 
-    return render_template('spec_cpu2017.html', grouped_data=grouped_data, max_values=max_values)  # 渲染数据到HTML模板
+    if cpu_model and rows:
+        for row in rows:
+            # 按照 CPU Model 、 CPU Count 和 Compiler 分组
+            key = (row['cpu_model'], row['cpu_count'], row['compiler'])
+            grouped_data.setdefault(key, []).append(row)
+        for key, group in grouped_data.items():
+            # 对每个分组的数据进行处理，找出最大值并标记
+            max_values[key] = {
+                'speed_int_base': max((r['speed_int_base'] or 0) for r in group),
+                'speed_fp_base': max((r['speed_fp_base'] or 0) for r in group),
+                'rate_int_base': max((r['rate_int_base'] or 0) for r in group),
+                'rate_fp_base': max((r['rate_fp_base'] or 0) for r in group)
+            }
+
+    return render_template(
+        'spec_cpu2017.html',
+        cpu_model=cpu_model,
+        grouped_data=grouped_data,
+        max_values=max_values
+    )
+
+
+    # max_values = {}
+    # for key, group in grouped_data.items():
+    #     max_values[key] = {
+    #         'speed_int_base': max([row['speed_int_base'] for row in group if row['speed_int_base'] is not None],
+    #                               default=None),
+    #         'speed_fp_base': max([row['speed_fp_base'] for row in group if row['speed_fp_base'] is not None],
+    #                              default=None),
+    #         'rate_int_base': max([row['rate_int_base'] for row in group if row['rate_int_base'] is not None],
+    #                              default=None),
+    #         'rate_fp_base': max([row['rate_fp_base'] for row in group if row['rate_fp_base'] is not None], default=None)
+    #     }
+    #
+    # return render_template('spec_cpu2017.html', grouped_data=grouped_data, max_values=max_values)  # 渲染数据到HTML模板
 
 # Stream 数据显示路由
 @app.route('/stream')
@@ -240,7 +293,7 @@ def cvt_mlc():
     # return render_template('cvt_mlc.html', grouped_data=grouped)
 
 @app.route('/cvt_mlc/<int:run_id>')
-def show_run(run_id):
+def show_cvt_mlc_run(run_id):
     conn = get_db_connection()
     if conn is None:
         abort(500, "Database connection error")
@@ -258,16 +311,16 @@ def show_run(run_id):
 
     # 2）查节点延迟
     cur.execute(
-        'SELECT source_node, target_node, latency_ns '
+        'SELECT source, target, latency_ns '
         'FROM NodeLatency WHERE meta_id = ? '
-        'ORDER BY source_node, target_node',
+        'ORDER BY source, target',
         (run_id,)
     )
     latencies = cur.fetchall()  # List[sqlite3.Row]
 
     # 3）查注入延迟 & 带宽
     cur.execute(
-        'SELECT delay_ns, loaded_latency_ns, bandwidth_mb_s '
+        'SELECT delay_ns, loaded_latency, bandwidth_mb_s '
         'FROM InjectionMetrics WHERE meta_id = ? '
         'ORDER BY delay_ns',
         (run_id,)
@@ -276,9 +329,9 @@ def show_run(run_id):
 
     # 4）查节点带宽
     cur.execute(
-        'SELECT source_node, target_node, bandwidth_mb_s '
+        'SELECT source, target, bandwidth_mb_s '
         'FROM NodeBandwidth WHERE meta_id = ? '
-        'ORDER BY source_node, target_node',
+        'ORDER BY source, target',
         (run_id,)
     )
     bandwidths = cur.fetchall()
@@ -286,20 +339,20 @@ def show_run(run_id):
     conn.close()
 
     # 5）组织矩阵数据
-    nodes = sorted({row['source_node'] for row in latencies} |
-                   {row['target_node'] for row in latencies})
+    nodes = sorted({row['source'] for row in latencies} |
+                   {row['target'] for row in latencies})
     latency_matrix = {
-        (r['source_node'], r['target_node']): r['latency_ns']
+        (r['source'], r['target']): r['latency_ns']
         for r in latencies
     }
     bandwidth_matrix = {
-        (r['source_node'], r['target_node']): r['bandwidth_mb_s']
+        (r['source'], r['target']): r['bandwidth_mb_s']
         for r in bandwidths
     }
 
     # 6）渲染模板，Row 对象直接能用 row['col'] 取值
     return render_template(
-        'run_detail.html',
+        'run_cvt_mlc_detail.html',
         meta=meta,
         nodes=nodes,
         latency_matrix=latency_matrix,

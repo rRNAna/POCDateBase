@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "_search_form.html" as forms %}
 
 {% block title %}HPL Gflops{% endblock %}
 
@@ -16,6 +17,7 @@
 
 {% block content %}
   <h2>HPL Gflops</h2>
+  {{ forms.search_form(url_for('spec_cpu2017'), cpu_model) }}
     <table>
         <thead>
             <tr>
