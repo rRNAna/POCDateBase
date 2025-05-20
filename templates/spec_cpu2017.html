@@ -3,6 +3,10 @@
 
 {% block title %}SPEC CPU2017 Benchmark{% endblock %}
 
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/spec_cpu2017.css') }}">
+{% endblock %}
+
 {% block style %}
     a{
         text-decoration:none;
@@ -16,19 +20,13 @@
 {% endblock %}
 
 {% block content %}
+<!--body-->
     <h2>SPEC CPU2017 Benchmark Data</h2>
-<!--    <div class="search-bar">-->
-<!--    <form action="{{ url_for('spec_cpu2017') }}" method="get">-->
-<!--      <input type="text"-->
-<!--             name="cpu_model"-->
-<!--             placeholder="Enter CPU Model"-->
-<!--             value="{{ cpu_model }}">-->
-<!--      <button type="submit">Search</button>-->
-<!--    </form>-->
-<!--  </div>-->
+    <!--搜索框-->
     {{ forms.search_form(url_for('spec_cpu2017'), cpu_model) }}
+<!--传入cpu_model,返回所有匹配cpu_model的数据，并分组显示。-->
 {% if cpu_model and grouped_data %}
-    <table>
+    <table class="spec-cpu2017">
         <thead>
             <tr>
                 <th>CPU Model</th>
@@ -139,11 +137,9 @@
             {% endfor %}
         </tbody>
     </table>
+<!--若没有匹配的cpu_model, 则提示没有该CPU的信息。-->
 {% elif cpu_model %}
   <p>No results found for "{{ cpu_model }}".</p>
 {% endif %}
-{% endblock %}
 
-{% block css %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/spec_cpu2017.css') }}">
 {% endblock %}

@@ -5,6 +5,13 @@ html, body {
   height: 100%;
 }
 
+header {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
 /* —— 导航规则 —— */
 nav {
   position: fixed;
@@ -14,24 +21,29 @@ nav {
   background-color: #333;   /* 深色背景 */
   color: white;
   padding: 20px;
-  transition: padding 0.3s, background-color 0.3s;
-  z-index: 1000;
+  transition: padding 0.3s, background-color 0.3s; /* 动画效果 */
+  z-index: 1000; /* 确保导航栏在最上层 */
 }
+
+/* 导航栏容器 */
 .nav-container {
   display: flex;
   justify-content: center;
   gap: 20px;
 }
+
 nav a {
   color: white;
   text-decoration: none;
   font-size: 18px;
+  transition: color 0.3s;
 }
+
 nav a:hover {
   color: #f2f2f2;
 }
 
-/* —— 然后把 body 设为列向 Flex —— */
+/* —— 把 body 设为列向 Flex —— */
 body {
   display: flex;
   flex-direction: column;
@@ -66,7 +78,7 @@ footer {
   display: flex;
   align-items: center;
   gap: 0.5rem;           /* 输入框和按钮之间留点空 */
-  margin-bottom: 1.5rem; /* 搜索区底部留空 */
+  margin-bottom: 0.5rem !important; /* 搜索区底部留空 */
 }
 
 .search-bar input[type="text"] {
@@ -90,20 +102,22 @@ footer {
   background-color: #555;
 }
 
-/* —— 表格整体固定布局，便于列宽分配 —— */
+/* 页面表格样式 */
 table {
   width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;        /* 启用固定布局，各列平均分配或按你指定的 width */
+  border-collapse: collapse; /* 让表格单元格的边框合并 */
+  table-layout: auto;    /* 自动布局，让列宽随内容浮动 */
 }
 
 /* —— 单元格基础样式 —— */
 th, td {
-  padding: 12px 8px;          /* 上下 12px，左右 8px */
+  padding: 4px 6px !important;    /* 上下 4px、左右 6px，快速收窄 */
+  font-size: 0.85rem !important;  /* 略微缩小文字 */
+  line-height: 1.2 !important;    /* 减小行高 */
   border: 1px solid #ccc;
-  vertical-align: top;        /* 顶部对齐，方便多行文本阅读 */
-  word-wrap: break-word;      /* 长文本自动换行 */
-  white-space: normal;        /* 允许换行 */
+  vertical-align: top;            /* 顶部对齐，方便多行文本阅读 */
+  word-wrap: break-word;          /* 长文本自动换行 */
+  white-space: normal;            /* 允许换行 */
 }
 
 /* —— 表头额外样式 —— */
@@ -114,31 +128,11 @@ th {
   line-height: 1.3;           /* 行高加大，防止行间拥挤 */
 }
 
-/* —— 根据需要，可以单独为某些列指定最小宽度 —— */
-th:nth-child(1) { min-width: 150px; }  /* CPU Model 列 */
-th:nth-child(2) { min-width: 120px; }  /* Submitter 列 */
-th:nth-child(3) { min-width: 80px; }   /* CPU Count 列 */
-
-/* —— 让表格更紧凑 —— */
-table {
-  table-layout: auto;    /* 回到自动布局，让列宽随内容浮动 */
+.none-value {
+    color: #808080;  /* 设置文字颜色为浅灰色 */
 }
-
-th, td {
-  padding: 4px 6px !important;   /* 上下 4px、左右 6px，快速收窄 */
-  font-size: 0.85rem !important; /* 略微缩小文字 */
-  line-height: 1.2 !important;   /* 减小行高 */
-}
-
-th {
-  background-color: #f9f9f9;     /* 可选：浅一点减少视觉重量 */
-}
-
-.search-bar {
-  margin-bottom: 0.5rem !important; /* 搜索区也收紧点 */
-}
-
+˚
 .content h1 {
-  font-size: 1.5rem !important;   /* 主标题稍微小一点 */
+  font-size: 1.5rem !important;   /* 主标题大小 */
   margin: 1rem 0 0.5rem !important;
 }

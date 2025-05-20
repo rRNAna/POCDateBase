@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}About —— POC Database{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+    {% block css %}{%  endblock %}
     <style>{% block style %}{% endblock %}</style>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -12,9 +13,9 @@
         <nav id="navbar">
         <div class="nav-container">
             <a href="/spec_cpu2017">SPEC CPU2017</a>
+            <a href="/stream">Stream</a>
             <a href="/hpl">HPL</a>
             <a href="/unixbench">UnixBench</a>
-            <a href="/stream">Stream</a>
             <a href="/cvt_mlc">AMD CVT & Intel MLC</a>
             <a href="/lmbench">Lmbench</a>
             <a href="/sysbench">Sysbench</a>
@@ -34,15 +35,13 @@
             <h2>项目简介</h2>
             <p>{{ description }}</p>
 
-            <h2>开发进度</h2>
+            <h2>版本说明</h2>
             <ul>
-                <li>✔ 已完成 SPEC CPU2017 数据抓取与同步</li>
-                <li>✔ /spec_cpu2017 页面：按 CPU 模糊搜索并高亮最大值</li>
-                <li>✔ /stream 页面：显示 Stream triad 百分比</li>
-                <li>…（后续功能）</li>
+                <li>✔ 实现剩余Benchmark页面功能；</li>
+                <li>✔ 修改网页布局及显示方式。</li>
             </ul>
 
-            <h2>其它</h2>
+            <h2>技术栈</h2>
             <p>后台数据库：SQLite + SQLAlchemy Core API</p>
             <p>前端框架：Flask + Jinja2 + Bootstrap</p>
         </div>

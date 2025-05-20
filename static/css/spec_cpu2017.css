@@ -2,6 +2,20 @@
 /* 导入 base.css 以继承其样式 */
 @import url('base.css');
 
+.spec-cpu2017 th:nth-child(1),
+.spec-cpu2017 td:nth-child(1) {
+  min-width: 150px !important;
+}
+
+.spec-cpu2017 th:nth-child(2),
+.spec-cpu2017 td:nth-child(2) {
+  min-width: 120px !important;
+}
+
+.spec-cpu2017 th:nth-child(3),
+.spec-cpu2017 td:nth-child(3) {
+  min-width: 80px !important;
+}
 /* 将None值的文字设置为灰色 */
 .none-value {
     color: #d3d3d3;  /* 浅灰色文字 */
