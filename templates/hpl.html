@@ -3,22 +3,12 @@
 
 {% block title %}HPL Gflops{% endblock %}
 
-{% block style %}
-    a{
-        text-decoration:none;
-        color:inherit;
-        cursor:auto;
-    }
-    .highlight {
-    color: #EE220C;
-    font-weight: bold;
-}
-{% endblock %}
-
 {% block content %}
+<!--body-->
   <h2>HPL Gflops</h2>
+<!--搜索框-->
   {{ forms.search_form(url_for('spec_cpu2017'), cpu_model) }}
-
+<!---->
     <table>
         <thead>
             <tr>
