@@ -96,9 +96,9 @@ def spec_cpu2017():
     rows = []
     if cpu_input:
         # 调试：打印所有可选的 cpu_model 值
-        cursor.execute("SELECT DISTINCT cpu_model FROM Turin_CPU2017_database")
-        all_models = [r['cpu_model'].strip() for r in cursor.fetchall()]
-        current_app.logger.info(f"Available cpu_model values: {all_models}")
+        # cursor.execute("SELECT DISTINCT cpu_model FROM Turin_CPU2017_database")
+        # all_models = [r['cpu_model'].strip() for r in cursor.fetchall()]
+        # current_app.logger.info(f"Available cpu_model values: {all_models}")
 
         # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
         pattern = f"%{cpu_input}%"
@@ -115,15 +115,6 @@ def spec_cpu2017():
         )
         rows = cursor.fetchall()
 
-    # if cpu_model:
-    #     pattern = f'%{cpu_model}%'
-    #     cursor.execute(
-    #         'SELECT * FROM Turin_CPU2017_database WHERE cpu_model = ? ORDER BY cpu_model DESC, submitter DESC',
-    #         (pattern,)
-    #     )
-    #     rows = cursor.fetchall()
-    # else:
-    #     rows = []
     conn.close()
 
     # 按照 CPU Model 、 CPU Count 和 Compiler 分组
@@ -151,20 +142,6 @@ def spec_cpu2017():
         max_values=max_values
     )
 
-
-    # max_values = {}
-    # for key, group in grouped_data.items():
-    #     max_values[key] = {
-    #         'speed_int_base': max([row['speed_int_base'] for row in group if row['speed_int_base'] is not None],
-    #                               default=None),
-    #         'speed_fp_base': max([row['speed_fp_base'] for row in group if row['speed_fp_base'] is not None],
-    #                              default=None),
-    #         'rate_int_base': max([row['rate_int_base'] for row in group if row['rate_int_base'] is not None],
-    #                              default=None),
-    #         'rate_fp_base': max([row['rate_fp_base'] for row in group if row['rate_fp_base'] is not None], default=None)
-    #     }
-    #
-    # return render_template('spec_cpu2017.html', grouped_data=grouped_data, max_values=max_values)  # 渲染数据到HTML模板
 
 # Stream 数据显示路由
 @app.route('/stream')
@@ -237,20 +214,37 @@ def unixbench():
     return render_template('unixbench.html', grouped_data=grouped)
 
 # HPL 数据显示路由
-@app.route('/hpl')
+@app.route('/hpl', methods=['GET'])
 def hpl():
+    cpu_input = request.args.get('cpu_model', '') or ''
+    cpu_input = cpu_input.strip()
+    current_app.logger.info(f"User search input: '{cpu_input}'")
+
+    cpu_model = request.args.get('cpu_model', '').strip()
+
     conn = get_db_connection()
 
     if conn is None:
         return "Database connection error", 500
 
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM HPL_database ORDER BY cpu_model DESC, submitter DESC')  # 获取所有数据
-    rows = cursor.fetchall()  # 获取所有记录
 
-    if not rows:
-        print("No data returned from database")
-        return "No data available", 404
+    rows = []
+    if cpu_input:
+        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
+        pattern = f"%{cpu_input}%"
+        current_app.logger.info(f"Querying with pattern: '{pattern}'")
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM HPL_database
+            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
+            ORDER BY cpu_model DESC, submitter DESC
+            """,
+            (pattern,)
+        )
+        rows = cursor.fetchall()
 
     conn.close()
 
@@ -261,36 +255,53 @@ def hpl():
         grouped.setdefault(cpu, []).append(item)
 
     # 渲染网页模版，传入分组数据
-    return render_template('hpl.html', grouped_data=grouped)
+    return render_template(
+        'hpl.html',
+        grouped_data=cpu_model
+    )
 
 
-@app.route('/cvt_mlc')
+@app.route('/cvt_mlc', methods=['GET'])
 def cvt_mlc():
+
+    cpu_input = request.args.get('cpu_model', '') or ''
+    cpu_input = cpu_input.strip()
+    current_app.logger.info(f"User search input: '{cpu_input}'")
+
+    cpu_model = request.args.get('cpu_model', '').strip()
+
     conn = get_db_connection()
 
     if conn is None:
         return "Database connection error", 500
 
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM CVT_MLC_meta_Information ORDER BY cpu_model DESC')  # 获取所有数据
-    rows = cursor.fetchall()  # 获取所有记录
 
-    if not rows:
-        print("No data returned from database")
-        return "No data available", 404
+    rows = []
+    if cpu_input:
+        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
+        pattern = f"%{cpu_input}%"
+        current_app.logger.info(f"Querying with pattern: '{pattern}'")
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM CVT_MLC_meta_Information
+            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
+            ORDER BY cpu_model DESC
+            """,
+            (pattern,)
+        )
+        rows = cursor.fetchall()
 
     conn.close()
 
-
-    # 按 cpu_model 分组
-    # grouped = {}
-    # for item in rows:
-    #     cpu = item['cpu_model']
-    #     grouped.setdefault(cpu, []).append(item)
-
     # 渲染网页模版，传入分组数据
-    return render_template('cvt_mlc.html', runs=rows)
-    # return render_template('cvt_mlc.html', grouped_data=grouped)
+    return render_template(
+        'cvt_mlc.html',
+        runs=rows,  # 原来的 rows
+        cpu_model=cpu_input  # 新增，把用户的搜索关键词传进去
+    )
 
 @app.route('/cvt_mlc/<int:run_id>')
 def show_cvt_mlc_run(run_id):
