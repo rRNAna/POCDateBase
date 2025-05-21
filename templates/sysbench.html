@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 {% import "_search_form.html" as forms %}
 
-{% block title %}HPL Gflops{% endblock %}
+{% block title %}SysBench CPU Speed{% endblock %}
 
 {% block content %}
 <!--body-->
-  <h2>HPL Gflops</h2>
+  <h2>CPU Speed</h2>
 <!--搜索框-->
-  {{ forms.search_form(url_for('hpl'), cpu_model) }}
+  {{ forms.search_form(url_for('sysbench'), cpu_model) }}
 <!---->
 {% if cpu_model and grouped_data%}
     <table>
         <thead>
             <tr>
                 <th>CPU Model</th>
-                <th>Gflops</th>
                 <th>CPU Count</th>
+                <th>Evente Per Second</th>
+                <th>Threads</th>
+                <th>Compiler</th>
             </tr>
         </thead>
         <tbody>
@@ -27,9 +29,11 @@
             </tr>
             {% for row in group %}
             <tr>
-                <td>{{ row['cpu_model'] }}</td>
-                <td>{{ row['gflops'] }}</td>
-                <td>{{ row['cpu_count'] }}</td>
+                <td>{{ row.cpu_model }}</td>
+                <td>{{ row.cpu_count }}</td>
+                <td>{{ row.events_per_second }}</td>
+                <td>{{ row.threads }}</td>
+                <td>{{ row.compiler }}</td>
             </tr>
             {% endfor %}
             {% endfor %}

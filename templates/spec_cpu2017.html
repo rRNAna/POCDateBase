@@ -139,7 +139,7 @@
     </table>
 <!--若没有匹配的cpu_model, 则提示没有该CPU的信息。-->
 {% elif cpu_model %}
-  <p>No results found for "{{ cpu_model }}".</p>
+  <p class="none-value">No results found for "{{ cpu_model }}".</p>
 {% endif %}
 
 {% endblock %}

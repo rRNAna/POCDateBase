@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Mar 14, 2025.
+# Creation Date : Mar 20, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -24,7 +24,7 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.2.0                                                       #
+# VERSION: 1.5.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -36,7 +36,7 @@ app = Flask(__name__)
 
 def get_db_connection():
     try:
-        conn = sqlite3.connect('database.db')  # 连接到您的SQLite数据库
+        conn = sqlite3.connect('database.db')  # 连接到SQLite数据库
         conn.row_factory = sqlite3.Row  # 使得查询结果返回字典格式
         return conn
 
@@ -48,43 +48,18 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('base.html',
-                           version='v1.3.0',
+                           version='v1.5.0',
                            author='rRNA',
                            contact='rasdasto857@gmail.com',
                            description='这是 POC_DataBase 的信息页。'
                            )
 
 
-# @app.route('/search', methods=['POST'])
-# def search():
-#     item_name = request.form['item_name']
-#     conn = sqlite3.connect('database.db')
-#     c = conn.cursor()
-#     c.execute('SELECT * FROM items WHERE name LIKE ?', ('%' + item_name + '%',))
-#     items = c.fetchall()
-#     conn.close()
-#     return render_template_string('''
-#         <html>
-#         <body>
-#             <h1>Search Results</h1>
-#             <ul>
-#             {% for item in items %}
-#                 <li>{{ item[1] }}</li>
-#             {% endfor %}
-#             </ul>
-#             <a href="/">Back</a>
-#         </body>
-#         </html>
-#     ''', items=items)
-
 # SPEC CPU2017 数据显示路由
 @app.route('/spec_cpu2017', methods=['GET'])
 def spec_cpu2017():
-    cpu_input = request.args.get('cpu_model', '') or ''
-    cpu_input = cpu_input.strip()
+    cpu_input = (request.args.get('cpu_model') or '').strip()
     current_app.logger.info(f"User search input: '{cpu_input}'")
-
-    cpu_model = request.args.get('cpu_model', '').strip()
 
     conn = get_db_connection()
 
@@ -121,7 +96,7 @@ def spec_cpu2017():
     grouped_data = {}
     max_values = {}
 
-    if cpu_model and rows:
+    if cpu_input and rows:
         for row in rows:
             # 按照 CPU Model 、 CPU Count 和 Compiler 分组
             key = (row['cpu_model'], row['cpu_count'], row['compiler'])
@@ -137,71 +112,113 @@ def spec_cpu2017():
 
     return render_template(
         'spec_cpu2017.html',
-        cpu_model=cpu_model,
+        cpu_model=cpu_input,
         grouped_data=grouped_data,
         max_values=max_values
     )
 
 
 # Stream 数据显示路由
-@app.route('/stream')
+@app.route('/stream', methods=['GET'])
 def stream():
+
+    cpu_input = (request.args.get('cpu_model') or '').strip()
+    current_app.logger.info(f"User search input: '{cpu_input}'")
+
     conn = get_db_connection()
 
     if conn is None:
         return "Database connection error", 500
 
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Stream_database ORDER BY cpu_model DESC, cpu_count DESC')  # 获取所有数据
-    rows = cursor.fetchall()  # 获取所有记录
 
-    # 先把每条记录加工一下，计算理论带宽和百分比
-    processed = []
+    rows = []
+    if cpu_input:
+        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
+        pattern = f"%{cpu_input}%"
+        current_app.logger.info(f"Querying with pattern: '{pattern}'")
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM Stream_database
+            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
+            ORDER BY cpu_model DESC, cpu_count DESC
+            """,
+            (pattern,)
+        )
+        rows = cursor.fetchall() # 获取所有记录
+
+    conn.close()
+
+    # 一次遍历：计算 + 分组
+    grouped = {}
     for row in rows:
-        cpu = row['cpu_model']
-        # 只有 AMD CPU 才计算理论值
-        if cpu .startswith("AMD"):
-            # triad 实测值
-            triad = row['stream_triad']
-            # 理论带宽：64 字节 * memory_speed(MT/s) / 8 (转换到字节) * memory_count
-            theo = 64 * row['memory_speed'] / 8 * row['memory_count']
+        # 把原 row 转成 dict（方便后面解包）
+        base = dict(row)
+
+        # 从 row 里取出 cpu_model、cpu_count、compiler 作为分组键
+        cpu = base['cpu_model']
+        count = base['cpu_count']
+        comp = base['compiler']
+        key = (cpu, count, comp)
+
+        # 计算 theo/pct
+        if cpu.upper().startswith("AMD"):
+            triad = base['stream_triad']
+            theo = 64 * base['memory_speed'] / 8 * base['memory_count']
             pct = (triad / theo * 100) if theo else None
         else:
-            # 非 AMD，跳过计算
             theo = None
             pct = None
 
-        # 把所有字段打平到字典里，再加上这两个新值
-        data = dict(row)
-        data['theoretical_bw'] = theo
-        data['bw_pct'] = pct
-        processed.append(data)
+        # 把新字段直接合并到 base dict
+        item = {
+            **base,  # 解包所有原始列
+            'theoretical_bw': theo,  # 新增字段
+            'bw_pct': pct  # 新增字段
+        }
 
-    # 按 cpu_model, cpu_count, compiler 分组
-    grouped = {}
-    for item in processed:
-        key = (item['cpu_model'], item['cpu_count'], item['compiler'])
+        # 按 key 放到 grouped
         grouped.setdefault(key, []).append(item)
 
     # 渲染模板，把分组后的字典传进去
-    return render_template('stream.html', grouped_data=grouped)
+    return render_template(
+        'stream.html',
+        cpu_model=cpu_input,
+        grouped_data=grouped
+    )
 
 
 # UnixBench 数据显示路由
-@app.route('/unixbench')
+@app.route('/unixbench', methods=['GET'])
 def unixbench():
+    cpu_input = (request.args.get('cpu_model') or '').strip()
+    current_app.logger.info(f"User search input: '{cpu_input}'")
+
     conn = get_db_connection()
 
     if conn is None:
         return "Database connection error", 500
 
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM Unixbench_database ORDER BY cpu_model DESC, submitter DESC')  # 获取所有数据
-    rows = cursor.fetchall()  # 获取所有记录
 
-    if not rows:
-        print("No data returned from database")
-        return "No data available", 404
+    rows = []
+    if cpu_input:
+        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
+        pattern = f"%{cpu_input}%"
+        current_app.logger.info(f"Querying with pattern: '{pattern}'")
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM Unixbench_database
+            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
+            ORDER BY cpu_model DESC, submitter DESC
+            """,
+            (pattern,)
+        )
+        rows = cursor.fetchall()
 
     conn.close()
 
@@ -210,17 +227,20 @@ def unixbench():
     for item in rows:
         key = (item['cpu_model'], item['cpu_count'], item['compiler'])
         grouped.setdefault(key, []).append(item)
+
     # 渲染网页模版，传入分组数据
-    return render_template('unixbench.html', grouped_data=grouped)
+    return render_template(
+        'unixbench.html',
+        cpu_model=cpu_input,
+        grouped_data=grouped
+    )
+
 
 # HPL 数据显示路由
 @app.route('/hpl', methods=['GET'])
 def hpl():
-    cpu_input = request.args.get('cpu_model', '') or ''
-    cpu_input = cpu_input.strip()
+    cpu_input = (request.args.get('cpu_model') or '').strip()
     current_app.logger.info(f"User search input: '{cpu_input}'")
-
-    cpu_model = request.args.get('cpu_model', '').strip()
 
     conn = get_db_connection()
 
@@ -257,10 +277,147 @@ def hpl():
     # 渲染网页模版，传入分组数据
     return render_template(
         'hpl.html',
-        grouped_data=cpu_model
+        cpu_model=cpu_input,
+        grouped_data=grouped
     )
 
 
+# sysbench 数据路由
+@app.route('/sysbench', methods=['GET'])
+def sysbench():
+    cpu_input = (request.args.get('cpu_model') or '').strip()
+    current_app.logger.info(f"User search input: '{cpu_input}'")
+
+    conn = get_db_connection()
+
+    if conn is None:
+        return "Database connection error", 500
+
+    cursor = conn.cursor()
+
+    rows = []
+    if cpu_input:
+        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
+        pattern = f"%{cpu_input}%"
+        current_app.logger.info(f"Querying with pattern: '{pattern}'")
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM SysBench_database
+            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
+            ORDER BY cpu_model DESC
+            """,
+            (pattern,)
+        )
+        rows = cursor.fetchall()
+
+    conn.close()
+
+    # 按 cpu_model 分组
+    grouped = {}
+    for item in rows:
+        cpu = item['cpu_model']
+        grouped.setdefault(cpu, []).append(item)
+
+    # 渲染网页模版，传入分组数据
+    return render_template(
+        'sysbench.html',
+        cpu_model=cpu_input,
+        grouped_data=grouped
+    )
+
+
+
+
+
+
+
+# lmbench 查询路由
+@app.route('/lmbench', methods=['GET'])
+def lmbench():
+    cpu_input = (request.args.get('cpu_model') or '').strip()
+    current_app.logger.info(f"User search input: '{cpu_input}'")
+
+    conn = get_db_connection()
+
+    if conn is None:
+        abort(500, "Database connection error")
+
+    cursor = conn.cursor()
+
+    rows = []
+    if cpu_input:
+        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
+        pattern = f"%{cpu_input}%"
+        current_app.logger.info(f"Querying with pattern: '{pattern}'")
+
+        cursor.execute(
+            """
+            SELECT *
+            FROM Lmbench_meta_information
+            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
+            ORDER BY cpu_model DESC
+            """,
+            (pattern,)
+        )
+        rows = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        'lmbench.html',
+        runs=rows,
+        cpu_model=cpu_input
+    )
+
+# Lmbench 数据显示路由
+@app.route('/lmbench/<int:run_id>')
+def show_lmbench_run(run_id):
+    conn = get_db_connection()
+    if conn is None:
+        abort(500, "Database connection error")
+
+    try:
+        cur = conn.cursor()
+        # 1）查元信息
+        cur.execute(
+            'SELECT * FROM Lmbench_meta_information WHERE id = ?',
+            (run_id,)
+        )
+        meta = cur.fetchone()
+        if meta is None:
+            abort(404, "Run not found")
+
+        # 2）查询跨 Node 延迟
+        # 一次性取出所有 lam_mem_rd 记录
+        cur.execute(
+            'SELECT target, lam_mem_rd '
+            'FROM Lmbench_lam_mem_rd_database WHERE meta_id = ? '
+            'ORDER BY target',
+            (run_id,)
+        )
+        records = cur.fetchall()
+
+        # nodes 只是取 distinct target，用作渲染时的表头或索引
+        nodes = sorted({r['target'] for r in records})
+
+        # lam_mem_rd 保留为完整的记录列表，传给模板
+        lam_mem_rd = records
+
+    finally:
+        conn.close()
+
+    # 3）渲染模板
+    return render_template(
+        'run_lmbench_detail.html',
+        meta=meta,
+        nodes=nodes,
+        lam_mem_rd=lam_mem_rd
+    )
+
+
+# AMD CVT & Intel MLC 查询路由
 @app.route('/cvt_mlc', methods=['GET'])
 def cvt_mlc():
 
@@ -296,13 +453,14 @@ def cvt_mlc():
 
     conn.close()
 
-    # 渲染网页模版，传入分组数据
     return render_template(
         'cvt_mlc.html',
         runs=rows,  # 原来的 rows
         cpu_model=cpu_input  # 新增，把用户的搜索关键词传进去
     )
 
+
+# AMD CVT & Intel MLC 显示路由
 @app.route('/cvt_mlc/<int:run_id>')
 def show_cvt_mlc_run(run_id):
     conn = get_db_connection()
