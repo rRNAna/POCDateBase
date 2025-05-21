@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% import "_search_form.html" as forms %}
+
+{% block title %}Lmbench{% endblock %}
+
+{% block content %}
+<!--body-->
+    <h2>Lmbench</h2>
+    <!--搜索框-->
+    {{ forms.search_form(url_for('lmbench'), cpu_model) }}
+<!--处理来自用户输入的信息-->
+{% if cpu_model %}
+    {% if runs %}
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>CPU Model</th><th>Tool</th><th>CPU Count</th><th>Submitter</th><th>Machine</th><th>Options</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for run in runs %}
+        <tr>
+          <td>{{ run.id }}</td>
+          <td>{{ run.cpu_model }}</td>
+          <td>{{ run.tool_name }}</td>
+          <td>{{ run.cpu_count }}</td>
+          <td>{{ run.submitter }}</td>
+          <td>{{ run.machine_name }}</td>
+          <td><a href="{{ url_for('show_lmbench_run', run_id=run.id) }}">check the details</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <!--若找不到cpu_model，则提示-->
+    {% else %}
+    <p>No results found for "{{ cpu_model }}".</p>
+    {% endif %}
+{% endif %}
+
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+{% endblock %}

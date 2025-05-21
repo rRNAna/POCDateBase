@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Lmbench{% endblock %}
+
+{% block content %}
+    <h1>{{ meta.cpu_model }} - {{ meta.cpu_count }}</h1>
+    <p>
+        Compiler: {{ meta.compiler }},
+        Threads: {{ meta.threads }},
+        Submitter: {{ meta.submitter }},
+        Machine: {{ meta.machine_name }}
+    </p>
+    <!-- 1. Lat_mem_rd -->
+    <h2>Latency Memory Readonly (ns)</h2>
+    <table>
+      <thead>
+        <tr><th>Node</th><th>Latency (ns)</th></tr>
+      </thead>
+      <tbody>
+      {% for row in lam_mem_rd %}
+        <tr>
+          <td>{{ row.target }}</td>
+          <td>{{ '%.1f'|format(row.lam_mem_rd) }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+
+    <p><a href="{{ url_for('lmbench') }}">Back to list</a></p>
+{% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+{% endblock %}
