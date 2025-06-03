@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Mar 20, 2025.
+# Creation Date : Jun 3, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -24,7 +24,7 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.5.0                                                       #
+# VERSION: 1.6.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -48,7 +48,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('base.html',
-                           version='v1.5.0',
+                           version='v1.6.0',
                            author='rRNA',
                            contact='rasdasto857@gmail.com',
                            description='这是 POC_DataBase 的信息页。'
@@ -98,8 +98,13 @@ def spec_cpu2017():
 
     if cpu_input and rows:
         for row in rows:
-            # 按照 CPU Model 、 CPU Count 和 Compiler 分组
-            key = (row['cpu_model'], row['cpu_count'], row['compiler'])
+            # 按照 CPU Model 、 CPU Count 和 Compiler_family 分组
+
+            compiler_full = row['compiler'] or ""
+            # 取空格前的第一个词作为“家族”，如 “AOCC” 或 “GCC”
+            compiler_family = compiler_full.split()[0] if compiler_full else ""
+
+            key = (row['cpu_model'], row['cpu_count'], compiler_family)
             grouped_data.setdefault(key, []).append(row)
         for key, group in grouped_data.items():
             # 对每个分组的数据进行处理，找出最大值并标记
