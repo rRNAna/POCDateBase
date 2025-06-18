@@ -2,18 +2,25 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Jun 3, 2025.
+# Creation Date : Jun 4, 2025.
 # Author: rRNA
 # Description   :
 #
 #
 #
 ###########################################################################################################
+from dotenv import load_dotenv
+import os
 import subprocess
-
-from flask import Flask, render_template, request, redirect, render_template_string, url_for, abort, current_app
-from flask_bootstrap import Bootstrap
+import functools
 import sqlite3
+
+from flask import Flask, render_template, request, redirect, render_template_string, url_for, abort, \
+    current_app, session, flash
+from flask_bootstrap import Bootstrap
+from functools import wraps
+
+
 
 from sqlalchemy.orm.session import Session
 
@@ -24,15 +31,60 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.6.0                                                       #
+# VERSION: 1.7.0                                                       #
 #                                                                      #
 ########################################################################
 
 ###########################################################################################################
 ###########################################################################################################
 
-app = Flask(__name__)
+# 加载 .env 中的环境变量
+load_dotenv()
 
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD')
+SECRET_KEY = os.getenv('FLASK_SECRET_KEY')
+
+if not ADMIN_USERNAME or not ADMIN_PASSWORD or not SECRET_KEY:
+    raise ValueError('Please set ADMIN_USERNAME, ADMIN_PASSWORD, SECRET_KEY in the .env file')
+
+app = Flask(__name__)
+app.secret_key = SECRET_KEY  # 用于 session 签名
+
+# 检查是否登陆
+def requires_auth(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get('is_admin'):
+            return redirect(url_for('admin_login', next=request.url))
+        return f(*args, **kwargs)
+    return wrapper
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+@requires_auth
+def admin_login():
+    if session.get('is_admin'):
+        return redirect(url_for('index'))
+    error = None
+    if  request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['is_admin'] = True
+            flash('Login Successful')
+            nxt = request.args.get('next') or url_for('index')
+            return redirect(url_for('nxt'))
+        else:
+            error = 'Incorrect username or password'
+    return render_template("admin_login.html", error=error)
+
+
+@app.route('/admin/logout')
+@requires_auth
+def admin_logout():
+    session.pop('is_admin', None)
+    flash('Logout Successful')
+    return redirect(url_for('index'))
 
 def get_db_connection():
     try:
@@ -48,7 +100,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('base.html',
-                           version='v1.6.0',
+                           version='v1.7.0',
                            author='rRNA',
                            contact='rasdasto857@gmail.com',
                            description='这是 POC_DataBase 的信息页。'
