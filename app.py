@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Jun 3, 2025.
+# Creation Date : Jun 4, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -13,6 +13,7 @@ import subprocess
 
 from flask import Flask, render_template, request, redirect, render_template_string, url_for, abort, current_app
 from flask_bootstrap import Bootstrap
+from functools import wraps
 import sqlite3
 
 from sqlalchemy.orm.session import Session
@@ -24,7 +25,7 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.6.0                                                       #
+# VERSION: 1.7.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -32,7 +33,7 @@ from sqlalchemy.orm.session import Session
 ###########################################################################################################
 
 app = Flask(__name__)
-
+def
 
 def get_db_connection():
     try:
@@ -48,7 +49,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('base.html',
-                           version='v1.6.0',
+                           version='v1.7.0',
                            author='rRNA',
                            contact='rasdasto857@gmail.com',
                            description='这是 POC_DataBase 的信息页。'
