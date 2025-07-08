@@ -16,7 +16,7 @@ pip install -r requirements.txt
 
 ## 版本信息
 
-当前版本：1.3.0
+当前版本：1.8.0
 
 ## 依赖包
 
