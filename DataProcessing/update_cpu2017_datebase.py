@@ -26,7 +26,7 @@ from sqlalchemy import create_engine, MetaData, and_
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.2.0                                                       #
+# VERSION: 1.3.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -44,7 +44,7 @@ CPU_MODEL_LIST = [
 ]
 DOWNLOAD_DIR = './downloads'  # 下载地址
 DATABASE_URL = 'sqlite:///../database.db'  # 数据库地址
-TABLE_NAME = 'Turin_CPU2017_database'  # 数据表名
+TABLE_NAME = 'CPU2017_database'  # 数据表名
 
 # —— 各阶段函数框架 ——
 
@@ -112,18 +112,30 @@ def process_csv(input_csv_path: str):
     }
 
     # 对应基准名到数据库字段名
-    benchmark_map = {
+    benchmark_map_base = {
         "CINT2017": "SPECspeed(r)2017_int_base",
         "CFP2017": "SPECspeed(r)2017_fp_base",
         "CINT2017rate": "SPECrate(r)2017_int_base",
         "CFP2017rate": "SPECrate(r)2017_fp_base",
     }
+    benchmark_map_peak = {
+        "CINT2017": "SPECspeed(r)2017_int_peak",
+        "CFP2017": "SPECspeed(r)2017_fp_peak",
+        "CINT2017rate": "SPECrate(r)2017_int_peak",
+        "CFP2017rate": "SPECrate(r)2017_fp_peak",
+    }
 
-    url_fields_map = {
-        "CINT2017": "speed_int_url",
-        "CFP2017": "speed_fp_url",
-        "CINT2017rate": "rate_int_url",
-        "CFP2017rate": "rate_fp_url",
+    url_map_base = {
+        "CINT2017": "speed_int_base_url",
+        "CFP2017": "speed_fp_base_url",
+        "CINT2017rate": "rate_int_base_url",
+        "CFP2017rate": "rate_fp_base_url",
+    }
+    url_map_peak = {
+        "CINT2017": "speed_int_peak_url",
+        "CFP2017": "speed_fp_peak_url",
+        "CINT2017rate": "rate_int_peak_url",
+        "CFP2017rate": "rate_fp_peak_url",
     }
 
     # ========== 1. 读取CSV并清理 ==========
@@ -156,7 +168,7 @@ def process_csv(input_csv_path: str):
     # ========== 2. 选出每类 benchmark 下，submitter+cpu_count 的最高 base result ==========
     results = {}
 
-    for benchmark, result_col in benchmark_map.items():
+    for benchmark, result_col in benchmark_map_base.items():
         # 过滤该类 benchmark
         df_bench = df[df["Benchmark"] == benchmark].copy()
 
@@ -175,12 +187,38 @@ def process_csv(input_csv_path: str):
                     "cpu_count": row['cpu_count'],
                     "Machine Name": row['System'],
                     "Compiler": "N/A",
-                    benchmark_map[benchmark]: row['Base Result'],
-                    url_fields_map[benchmark]: row['full_url'],
+                    benchmark_map_base[benchmark]: row['Base Result'],
+                    url_map_base[benchmark]: row['full_url'],
                 }
             else:
-                results[key][benchmark_map[benchmark]] = row['Base Result']
-                results[key][url_fields_map[benchmark]] = row['full_url']
+                results[key][benchmark_map_base[benchmark]] = row['Base Result']
+                results[key][url_map_base[benchmark]] = row['full_url']
+
+    for benchmark, result_col in benchmark_map_peak.items():
+        # 过滤该类 benchmark
+        df_bench = df[df["Benchmark"] == benchmark].copy()
+
+        # 按 cpu_model, submitter, cpu_count 选最大 Peak Result
+        df_bench["Peak Result"] = pd.to_numeric(df_bench["Peak Result"], errors="coerce")
+        idx = df_bench.groupby(['cpu_model', 'submitter', 'cpu_count'])['Peak Result'].idxmax()
+        df_max = df_bench.loc[idx]
+
+        for _, row in df_max.iterrows():
+            key = (row['cpu_model'], row['submitter'], row['cpu_count'])
+
+            if key not in results:
+                results[key] = {
+                    "cpu_model": row['cpu_model'],
+                    "submitter": row['submitter'],
+                    "cpu_count": row['cpu_count'],
+                    "Machine Name": row['System'],
+                    "Compiler": "N/A",
+                    benchmark_map_peak[benchmark]: row['Peak Result'],
+                    url_map_peak[benchmark]: row['full_url'],
+                }
+            else:
+                results[key][benchmark_map_peak[benchmark]] = row['Peak Result']
+                results[key][url_map_peak[benchmark]] = row['full_url']
 
     # ========== 3. 整理为表格格式 ==========
     final_df = pd.DataFrame(results.values())
@@ -193,13 +231,21 @@ def process_csv(input_csv_path: str):
         "cpu_model",
         "submitter",
         "SPECspeed(r)2017_int_base",
+        "SPECspeed(r)2017_int_peak",
         "SPECspeed(r)2017_fp_base",
+        "SPECspeed(r)2017_fp_peak",
         "SPECrate(r)2017_int_base",
+        "SPECrate(r)2017_int_peak",
         "SPECrate(r)2017_fp_base",
-        "speed_int_url",
-        "speed_fp_url",
-        "rate_int_url",
-        "rate_fp_url",
+        "SPECrate(r)2017_fp_peak",
+        "speed_int_base_url",
+        "speed_int_peak_url",
+        "speed_fp_base_url",
+        "speed_fp_peak_url",
+        "rate_int_base_url",
+        "rate_int_peak_url",
+        "rate_fp_base_url",
+        "rate_fp_peak_url",
         "Compiler",
         "cpu_count",
         "Machine Name"
@@ -241,19 +287,27 @@ def compare_and_update(processed_csv: str):
 
     # 3) 重命名列，使之与数据库列名一致
     rename_map = {
-        'CPU Model': 'cpu_model',
-        'submitter': 'submitter',
-        'SPECspeed(r)2017_int_base': 'speed_int_base',
-        'SPECspeed(r)2017_fp_base': 'speed_fp_base',
-        'SPECrate(r)2017_int_base': 'rate_int_base',
-        'SPECrate(r)2017_fp_base': 'rate_fp_base',
-        'cpu_count': 'cpu_count',
-        'speed_int_url': 'speed_int_url',
-        'speed_fp_url': 'speed_fp_url',
-        'rate_int_url': 'rate_int_url',
-        'rate_fp_url': 'rate_fp_url',
-        'Compiler': 'compiler',
-        'Machine Name': 'machine_name'
+        'CPU Model':                    'cpu_model',
+        'submitter':                    'submitter',
+        'SPECspeed(r)2017_int_base':    'speed_int_base',
+        'SPECspeed(r)2017_int_peak':    'speed_int_peak',
+        'SPECspeed(r)2017_fp_base':     'speed_fp_base',
+        'SPECspeed(r)2017_fp_peak':     'speed_fp_peak',
+        'SPECrate(r)2017_int_base':     'rate_int_base',
+        'SPECrate(r)2017_int_peak':     'rate_int_peak',
+        'SPECrate(r)2017_fp_base':      'rate_fp_base',
+        'SPECrate(r)2017_fp_peak':      'rate_fp_peak',
+        'speed_int_base_url':           'speed_int_base_url',
+        'speed_int_peak_url':           'speed_int_peak_url',
+        'speed_fp_base_url':            'speed_fp_base_url',
+        'speed_fp_peak_url':            'speed_fp_peak_url',
+        'rate_int_base_url':            'rate_int_base_url',
+        'rate_int_peak_url':            'rate_int_peak_url',
+        'rate_fp_base_url':             'rate_fp_base_url',
+        'rate_fp_peak_url':             'rate_fp_peak_url',
+        'Compiler':                     'compiler',
+        'cpu_count':                    'cpu_count',
+        'Machine Name':                 'machine_name'
     }
     df_official.rename(columns=rename_map, inplace=True)
     # df_local   .rename(columns=rename_map, inplace=True)
@@ -262,13 +316,21 @@ def compare_and_update(processed_csv: str):
     STABLE_KEYS = ['cpu_model', 'submitter', 'cpu_count']
     METRIC_COLUMNS = [
         'speed_int_base',
+        'speed_int_peak',
         'speed_fp_base',
+        'speed_fp_peak',
         'rate_int_base',
+        'rate_int_peak',
         'rate_fp_base',
-        'speed_int_url',
-        'speed_fp_url',
-        'rate_int_url',
-        'rate_fp_url',
+        'rate_fp_peak',
+        'speed_int_base_url',
+        'speed_int_peak_url',
+        'speed_fp_base_url',
+        'speed_fp_peak_url',
+        'rate_int_base_url',
+        'rate_int_peak_url',
+        'rate_fp_base_url',
+        'rate_fp_peak_url',
         'machine_name'
     ]
 

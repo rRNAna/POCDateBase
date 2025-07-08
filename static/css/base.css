@@ -111,9 +111,9 @@ table {
 
 /* —— 单元格基础样式 —— */
 th, td {
-  padding: 4px 6px !important;    /* 上下 4px、左右 6px，快速收窄 */
-  font-size: 0.85rem !important;  /* 略微缩小文字 */
-  line-height: 1.2 !important;    /* 减小行高 */
+  padding: 4px 6px ;    /* 上下 4px、左右 6px，快速收窄 */
+  font-size: 0.85rem ;  /* 略微缩小文字 */
+  line-height: 1.2 ;    /* 减小行高 */
   border: 1px solid #ccc;
   vertical-align: top;            /* 顶部对齐，方便多行文本阅读 */
   word-wrap: break-word;          /* 长文本自动换行 */
@@ -131,7 +131,7 @@ th {
 .none-value {
     color: #808080;  /* 设置文字颜色为浅灰色 */
 }
-˚
+
 .content h1 {
   font-size: 1.5rem !important;   /* 主标题大小 */
   margin: 1rem 0 0.5rem !important;

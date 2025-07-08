@@ -29,16 +29,27 @@
     <table class="spec-cpu2017">
         <thead>
             <tr>
-                <th>CPU Model</th>
-                <th>Submitter</th>
-                <th>CPU Count</th>
-                <th>SPECspeed(r)2017_int_base</th>
-                <th>SPECspeed(r)2017_fp_base</th>
-                <th>SPECrate(r)2017_int_base</th>
-                <th>SPECrate(r)2017_fp_base</th>
-                <th>Compiler</th>
-                <th>Machine Name</th>
+                <th rowspan="2">CPU Model</th>
+                <th rowspan="2">Submitter</th>
+                <th rowspan="2">CPU Count</th>
+
+                <th colspan="2">SPECspeed(r)2017_int</th>
+
+                <th colspan="2">SPECspeed(r)2017_fp</th>
+
+                <th colspan="2">SPECrate(r)2017_int</th>
+
+                <th colspan="2">SPECrate(r)2017_fp</th>
+
+                <th rowspan="2">Compiler</th>
+                <th rowspan="2">Machine Name</th>
             </tr>
+        <tr>
+            <th>base</th><th>peak</th>
+            <th>base</th><th>peak</th>
+            <th>base</th><th>peak</th>
+            <th>base</th><th>peak</th>
+        </tr>
         </thead>
         <tbody>
 
@@ -56,7 +67,7 @@
                 <td>
                     {% if row['speed_int_base'] %}
                         <a
-                                href="{{ row['speed_int_url'] }}"
+                                href="{{ row['speed_int_base_url'] }}"
                                 target="_blank"
                                 class="{% if row['speed_int_base'] == max_values[cpu_key]['speed_int_base'] %}
                                 highlight
@@ -70,11 +81,29 @@
                     {% endif %}
                 </td>
 
+                <!-- 处理 SPECspeed(r)2017_int_peak -->
+                <td>
+                    {% if row['speed_int_peak'] %}
+                        <a
+                                href="{{ row['speed_int_peak_url'] }}"
+                                target="_blank"
+                                class="{% if row['speed_int_peak'] == max_values[cpu_key]['speed_int_peak'] %}
+                                highlight
+                                {% elif row['speed_int_peak'] is none %}
+                                none-value
+                                {% endif %}">
+                            {{ row['speed_int_peak'] }}
+                        </a>
+                    {% else %}
+                        <a class="none-value">N/A</a>
+                    {% endif %}
+                </td>
+
                 <!-- 处理 SPECspeed(r)2017_fp_base -->
                 <td>
                     {% if row['speed_fp_base'] %}
                         <a
-                                href="{{ row['speed_fp_url'] }}"
+                                href="{{ row['speed_fp_base_url'] }}"
                                 target="_blank"
                                 class="{% if row['speed_fp_base'] == max_values[cpu_key]['speed_fp_base'] %}
                                 highlight
@@ -88,11 +117,29 @@
                     {% endif %}
                 </td>
 
+                <!-- 处理 SPECspeed(r)2017_fp_peak -->
+                <td>
+                    {% if row['speed_fp_peak'] %}
+                        <a
+                                href="{{ row['speed_fp_peak_url'] }}"
+                                target="_blank"
+                                class="{% if row['speed_fp_peak'] == max_values[cpu_key]['speed_fp_peak'] %}
+                                highlight
+                                {% elif row['speed_fp_peak'] is none %}
+                                none-value
+                                {% endif %}">
+                            {{ row['speed_fp_peak'] }}
+                        </a>
+                    {% else %}
+                        <a class="none-value">N/A</a>
+                    {% endif %}
+                </td>
+
                 <!-- 处理 SPECrate(r)2017_int_base -->
                 <td>
                     {% if row['rate_int_base'] %}
                         <a
-                                href="{{ row['rate_int_url'] }}"
+                                href="{{ row['rate_int_base_url'] }}"
                                 target="_blank"
                                 class="{% if row['rate_int_base'] == max_values[cpu_key]['rate_int_base'] %}
                                 highlight
@@ -106,11 +153,29 @@
                     {% endif %}
                 </td>
 
+                <!-- 处理 SPECrate(r)2017_int_peak -->
+                <td>
+                    {% if row['rate_int_peak'] %}
+                        <a
+                                href="{{ row['rate_int_peak_url'] }}"
+                                target="_blank"
+                                class="{% if row['rate_int_peak'] == max_values[cpu_key]['rate_int_peak'] %}
+                                highlight
+                                {% elif row['rate_int_peak'] is none %}
+                                none-value
+                                {% endif %}">
+                            {{ row['rate_int_peak'] }}
+                        </a>
+                    {% else %}
+                        <a class="none-value">N/A</a>
+                    {% endif %}
+                </td>
+
                 <!-- 处理 SPECrate(r)2017_fp_base -->
                 <td>
                     {% if row['rate_fp_base'] %}
                         <a
-                                href="{{ row['rate_fp_url'] }}"
+                                href="{{ row['rate_fp_base_url'] }}"
                                 target="_blank"
                                 class="{% if row['rate_fp_base'] == max_values[cpu_key]['rate_fp_base'] %}
                                 highlight
@@ -123,6 +188,25 @@
                         <a class="none-value">N/A</a>
                     {% endif %}
                 </td>
+
+                <!-- 处理 SPECrate(r)2017_fp_peak -->
+                <td>
+                    {% if row['rate_fp_peak'] %}
+                        <a
+                                href="{{ row['rate_fp_peak_url'] }}"
+                                target="_blank"
+                                class="{% if row['rate_fp_peak'] == max_values[cpu_key]['rate_fp_peak'] %}
+                                highlight
+                                {% elif row['rate_fp_peak'] is none %}
+                                none-value
+                                {% endif %}">
+                            {{ row['rate_fp_peak'] }}
+                        </a>
+                    {% else %}
+                        <a class="none-value">N/A</a>
+                    {% endif %}
+                </td>
+
                 <td>{{ row['compiler'] }}</td>
                 <td>
                     {% if row['machine_name'] %}
