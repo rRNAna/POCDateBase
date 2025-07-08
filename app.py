@@ -31,7 +31,7 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.7.0                                                       #
+# VERSION: 1.8.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -100,7 +100,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('base.html',
-                           version='v1.7.0',
+                           version='v1.8.0',
                            author='rRNA',
                            contact='rasdasto857@gmail.com',
                            description='这是 POC_DataBase 的信息页。'
@@ -123,7 +123,7 @@ def spec_cpu2017():
     rows = []
     if cpu_input:
         # 调试：打印所有可选的 cpu_model 值
-        # cursor.execute("SELECT DISTINCT cpu_model FROM Turin_CPU2017_database")
+        # cursor.execute("SELECT DISTINCT cpu_model FROM CPU2017_database")
         # all_models = [r['cpu_model'].strip() for r in cursor.fetchall()]
         # current_app.logger.info(f"Available cpu_model values: {all_models}")
 
@@ -134,7 +134,7 @@ def spec_cpu2017():
         cursor.execute(
             """
             SELECT *
-            FROM Turin_CPU2017_database
+            FROM CPU2017_database
             WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
             ORDER BY cpu_model DESC, submitter DESC
             """,
@@ -162,9 +162,13 @@ def spec_cpu2017():
             # 对每个分组的数据进行处理，找出最大值并标记
             max_values[key] = {
                 'speed_int_base': max((r['speed_int_base'] or 0) for r in group),
+                'speed_int_peak': max((r['speed_int_base'] or 0) for r in group),
                 'speed_fp_base': max((r['speed_fp_base'] or 0) for r in group),
+                'speed_fp_peak': max((r['speed_fp_base'] or 0) for r in group),
                 'rate_int_base': max((r['rate_int_base'] or 0) for r in group),
-                'rate_fp_base': max((r['rate_fp_base'] or 0) for r in group)
+                'rate_int_peak': max((r['rate_int_base'] or 0) for r in group),
+                'rate_fp_base': max((r['rate_fp_base'] or 0) for r in group),
+                'rate_fp_peak': max((r['rate_fp_base'] or 0) for r in group)
             }
 
     return render_template(
