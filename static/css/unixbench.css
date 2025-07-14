@@ -1,0 +1,7 @@
+/* unixbench.css */
+/* 导入 base.css 以继承其样式 */
+@import url('base.css');
+
+.glass-panel-header{
+  height: 10vh;               /* 视口高度的 10% */
+}

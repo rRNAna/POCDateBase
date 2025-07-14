@@ -57,6 +57,82 @@ body {
   background-attachment: fixed;       /* 固定在视窗，页面滚动它不动 */
   background-size: cover;             /* 拉伸并裁剪，始终填满整个视窗 */
 }
+.glass-panel-table {
+  display: flex;
+  flex-direction: column;
+  height: 60vh;               /* 视口高度的 60% */
+  width: 90vw;
+  border-radius: 12px;
+
+  /* 1. 半透明底色 + 毛玻璃效果 */
+  /* background 决定整体的底色和透明度，rgba 中最后一个数值越小越透明 */
+  background: rgba(255, 255, 255, 0.5);
+  /* backdrop-filter 作用于容器背后的所有内容，实现模糊 */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); /* Safari 前缀 */
+
+  /* 2. 内外边距 */
+  /* padding 是容器内部内容与边框的距离，数值越大内容越不靠边 */
+  padding: 10px;
+  /* margin 是容器与其它元素（或页面边缘）的距离，上下 0px，左右 auto 居中 */
+  margin: 0px auto;
+
+  /* 3. 最大尺寸 & 滚动 */
+  /* max-width 限制最大宽度为视口宽度的 90%，防止过宽撑破屏幕 */
+  max-width: 90vw;
+  /* max-height 限制最大高度为视口高度的 80%，防止过高超出屏幕 */
+  max-height: 80vh;
+  /* overflow: auto；当内容超出 max- 容器时，自动出现滚动条 */
+  overflow: auto;
+
+  /* 4. 圆角 & 阴影 */
+  /* border-radius 决定圆角弧度，数值越大越圆润 */
+  border-radius: 12px;
+  /* box-shadow 添加阴影，格式：水平偏移 垂直偏移 模糊半径 扩散半径 颜色 */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-panel-header{
+  display: flex;
+  flex-direction: column;
+  height: 70vh;               /* 视口高度的 70% */
+  width: 90vw;
+  border-radius: 12px;
+
+  /* 1. 半透明底色 + 毛玻璃效果 */
+  /* background 决定整体的底色和透明度，rgba 中最后一个数值越小越透明 */
+  background: rgba(255, 255, 255, 0.15);
+  /* backdrop-filter 作用于容器背后的所有内容，实现模糊 */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); /* Safari 前缀 */
+
+  /* 2. 内外边距 */
+  /* padding 是容器内部内容与边框的距离，数值越大内容越不靠边 */
+  padding: 10px;
+  /* margin 是容器与其它元素（或页面边缘）的距离，上下 40px，左右 auto 居中 */
+  margin: 20px auto;
+
+  /* 3. 最大尺寸 & 滚动 */
+  /* max-width 限制最大宽度为视口宽度的 90%，防止过宽撑破屏幕 */
+  max-width: 90vw;
+  /* max-height 限制最大高度为视口高度的 80%，防止过高超出屏幕 */
+  max-height: 80vh;
+  /* overflow: auto；当内容超出 max- 容器时，自动出现滚动条 */
+  overflow: auto;
+
+  /* 4. 圆角 & 阴影 */
+  /* border-radius 决定圆角弧度，数值越大越圆润 */
+  border-radius: 12px;
+  /* box-shadow 添加阴影，格式：水平偏移 垂直偏移 模糊半径 扩散半径 颜色 */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 如果要兼容不支持 backdrop-filter 的浏览器，可增加降级 */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-panel {
+    background: rgba(255,255,255,0.8);
+  }
+}
 
 /* —— 留出顶部导航高度 —— */
 main.content {
@@ -138,7 +214,7 @@ th {
 }
 
 .none-value {
-    color: #808080;  /* 设置文字颜色为浅灰色 */
+    color: #d3d3d3;  /* 设置文字颜色为浅灰色 */
 }
 
 .content h1 {
