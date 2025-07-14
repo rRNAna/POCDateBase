@@ -3,6 +3,7 @@
 {% block title %}Lmbench{% endblock %}
 
 {% block content %}
+    <div class="glass-panel-detail">
     <h1>{{ meta.cpu_model }} - {{ meta.cpu_count }}</h1>
     <p>
         Compiler: {{ meta.compiler }},
@@ -27,8 +28,9 @@
     </table>
 
     <p><a href="{{ url_for('lmbench') }}">Back to list</a></p>
+    </div>
 {% endblock %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/cvt_mlc.css') }}">
 {% endblock %}

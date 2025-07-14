@@ -15,6 +15,7 @@
 {% endblock %}
 
 {% block content %}
+    <div class="glass-panel-detail">
     <h1>{{ meta.cpu_model }} – {{ meta.tool_name }}</h1>
     <p>Submitter: {{ meta.submitter }}, CPU Count: {{ meta.cpu_count }}, Machine: {{ meta.machine_name }}</p>
     <!-- 1. Node Latency 矩阵 -->
@@ -71,8 +72,9 @@
     </table>
 
     <p><a href="{{ url_for('cvt_mlc') }}">Back to list</a></p>
+    </div>
 {% endblock %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/cvt_mlc.css') }}">
 {% endblock %}

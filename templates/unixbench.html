@@ -4,11 +4,14 @@
 {% block title %}UnixBench System Benchmarks Index Scores{% endblock %}
 
 {% block content %}
+    <div class="glass-panel-header" id="header-panel">
 <!--body-->
-  <h2>UnixBench System Benchmarks Index Scores</h2>
+        <h2>UnixBench System Benchmarks Index Scores</h2>
 <!--搜索框-->
-  {{ forms.search_form(url_for('unixbench'), cpu_model) }}
+        {{ forms.search_form(url_for('unixbench'), cpu_model) }}
+    </div>
 {% if cpu_model and grouped_data %}
+    <div class="glass-panel-table">
     <table>
         <thead>
             <tr>
@@ -35,8 +38,11 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 {% elif cpu_model %}
-    <p class="none-value">No results found for "{{ cpu_model }}".</p>
+    <div class="glass-panel-header">
+        <p class="none-value">No results found for "{{ cpu_model }}".</p>
+    </div>
 {% endif %}
 
 {% endblock %}

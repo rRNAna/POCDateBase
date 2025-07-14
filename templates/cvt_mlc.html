@@ -4,26 +4,30 @@
 {% block title %}AMD CVT & Intel MLC{% endblock %}
 
 {% block style %}
-    a{
-        text-decoration:none;
-        color:inherit;
-        cursor:auto;
-    }
-    .highlight {
-    color: #EE220C;
-    font-weight: bold;
-}
+{#    a{#}
+{#        text-decoration:none;#}
+{#        color:inherit;#}
+{#        cursor:auto;#}
+{#    }#}
+{#    .highlight {#}
+{#    color: #EE220C;#}
+{#    font-weight: bold;#}
+{#}#}
 {% endblock %}
 
 {% block content %}
 <!--body-->
-    <h2>AMD CVT & Intel MLC</h2>
-    <!--搜索框-->
-    {{ forms.search_form(url_for('cvt_mlc'), cpu_model) }}
+    <div class="glass-panel-header" id="header-panel">
+        <h2>AMD CVT & Intel MLC</h2>
+        <!--搜索框-->
+        {{ forms.search_form(url_for('cvt_mlc'), cpu_model) }}
+    </div>
 <!--处理来自用户输入的信息-->
 {% if cpu_model %}
+
     {% if runs %}
-    <table>
+        <div class="glass-panel-table">
+            <table>
       <thead>
         <tr>
           <th>ID</th><th>CPU Model</th><th>Tool</th><th>CPU Count</th><th>Submitter</th><th>Machine</th><th>Options</th>
@@ -43,14 +47,17 @@
       {% endfor %}
       </tbody>
     </table>
+        </div>
     <!--若找不到cpu_model，则提示-->
     {% else %}
-    <p>No results found for "{{ cpu_model }}".</p>
+        <div class="glass-panel-header">
+            <p class="none-value">No results found for "{{ cpu_model }}".</p>
+        </div>
     {% endif %}
 {% endif %}
 
 {% endblock %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/cvt_mlc.css') }}">
 {% endblock %}
