@@ -26,49 +26,32 @@
   text-align: left
 }
 
-.spec-cpu2017 thead tr.grouping-headers th {
-  z-index: 11;
+/* 4) 关键：在 thead 上加伪元素，做渐变毛玻璃 */
+.spec-cpu2017 thead tr:first-child::after {
+  top: 0px;
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 120px;             /* 渐变高度，自行调整 */
+
+  /* 先模糊：把底下滚动内容模糊 */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+
+  /* 再做渐变：从顶部不透明到底部透明 */
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0,0,0,1) 0%,
+    rgba(0,0,0,0) 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0,0,0,1) 0%,
+    rgba(0,0,0,0) 100%
+  );
+
 }
-
-
-
-
-
-
-
-/*!* 4) 关键：在 thead 上加伪元素，做渐变毛玻璃 *!*/
-/*.spec-cpu2017 thead tr:first-child::after {*/
-/*  top: 0px;*/
-/*  content: "";*/
-/*  position: absolute;*/
-/*  left: 0;*/
-/*  right: 0;*/
-/*  height: 40px;             !* 渐变高度，自行调整 *!*/
-/*  pointer-events: none;     !* 让点击穿透 *!*/
-
-/*  !* 先模糊：把底下滚动内容模糊 *!*/
-/*  backdrop-filter: blur(8px);*/
-/*  -webkit-backdrop-filter: blur(8px);*/
-
-/*  !* 再做渐变：从顶部不透明到底部透明 *!*/
-/*  mask-image: linear-gradient(*/
-/*    to bottom,*/
-/*    rgba(0,0,0,1) 0%,*/
-/*    rgba(0,0,0,0) 100%*/
-/*  );*/
-/*  -webkit-mask-image: linear-gradient(*/
-/*    to bottom,*/
-/*    rgba(0,0,0,1) 0%,*/
-/*    rgba(0,0,0,0) 100%*/
-/*  );*/
-
-/*  !* 备选：如果浏览器不支持 mask-image，你也可以用半透明白色渐变做覆盖 *!*/
-/*  !* background: linear-gradient(*/
-/*       to bottom,*/
-/*       rgba(255,255,255,0.9) 0%,*/
-/*       rgba(255,255,255,0) 100%*/
-/*     ); *!*/
-/*}*/
 
 /* 单元格基础 */
 .spec-cpu2017 th,
@@ -88,24 +71,23 @@
 .spec-cpu2017 thead tr:first-child th {
   position: sticky;
   top: 0px;
-  z-index: 3;
+  z-index: 10;
   padding: 8px 12px;
   text-align: center;
   /* 这里强制一行表头的高度, 3rem */
-  height: 3rem;
+  height: 1.5rem;
   /* 并把同样的变量存到根定制属性上 */
-  --group-row-height: 3rem;
+  --group-row-height: 1.5rem;
 }
 
 /* ------------------------------
    3) 确保两行都保持它们原来的 padding／对齐
-   （可酌情调整）
    ------------------------------ */
 .spec-cpu2017 thead tr:nth-child(2) th {
   position: sticky;
   top: 40px;                 /* 粘在导航底部 */
   background: rgba(255, 255, 255, 0.4);
-  z-index: 1000;                /* 高于数据行 */
+  z-index: 30;                /* 高于数据行 */
   padding: 4px 6px;
   text-align: center;
 }
@@ -123,7 +105,7 @@
 .glass-panel-table {
   display: flex;
   flex-direction: column;
-  height: 65vh;               /* 视口高度的 65% */
+  height: 60vh;               /* 视口高度的 60% */
   width: 90vw;
   border-radius: 12px;
 
