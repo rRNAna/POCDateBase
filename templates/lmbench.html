@@ -5,12 +5,15 @@
 
 {% block content %}
 <!--body-->
+    <div class="glass-panel-header" id="header-panel">
     <h2>Lmbench</h2>
     <!--搜索框-->
     {{ forms.search_form(url_for('lmbench'), cpu_model) }}
+    </div>
 <!--处理来自用户输入的信息-->
 {% if cpu_model %}
     {% if runs %}
+    <div class="glass-panel-table">
     <table>
       <thead>
         <tr>
@@ -31,14 +34,17 @@
       {% endfor %}
       </tbody>
     </table>
+    </div>
     <!--若找不到cpu_model，则提示-->
     {% else %}
-    <p>No results found for "{{ cpu_model }}".</p>
+        <div class="glass-panel-header">
+            <p class="none-value">No results found for "{{ cpu_model }}".</p>
+        </div>
     {% endif %}
 {% endif %}
 
 {% endblock %}
 
 {% block css %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/cvt_mlc.css') }}">
 {% endblock %}
