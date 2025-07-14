@@ -100,7 +100,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('base.html',
-                           version='v1.8.0',
+                           version='v1.9.0',
                            author='rRNA',
                            contact='rasdasto857@gmail.com',
                            description='这是 POC_DataBase 的信息页。'
@@ -387,12 +387,6 @@ def sysbench():
         cpu_model=cpu_input,
         grouped_data=grouped
     )
-
-
-
-
-
-
 
 # lmbench 查询路由
 @app.route('/lmbench', methods=['GET'])

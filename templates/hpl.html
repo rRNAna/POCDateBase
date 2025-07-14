@@ -3,13 +3,20 @@
 
 {% block title %}HPL Gflops{% endblock %}
 
+{% block css %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/hpl.css') }}">
+{% endblock %}
+
 {% block content %}
 <!--body-->
-  <h2>HPL Gflops</h2>
+    <div class="glass-panel-header" id="header-panel">
+        <h2>HPL Gflops</h2>
 <!--搜索框-->
-  {{ forms.search_form(url_for('hpl'), cpu_model) }}
+        {{ forms.search_form(url_for('hpl'), cpu_model) }}
+    </div>
 <!---->
 {% if cpu_model and grouped_data%}
+    <div class="glass-panel-table">
     <table>
         <thead>
             <tr>
@@ -35,12 +42,11 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
 {% elif cpu_model %}
-    <p class="none-value">No results found for "{{ cpu_model }}".</p>
+    <div class="glass-panel-header">
+        <p class="none-value">No results found for "{{ cpu_model }}".</p>
+    </div>
 {% endif %}
 
-{% endblock %}
-
-{% block css %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/base.css') }}">
 {% endblock %}
