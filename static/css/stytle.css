@@ -1,0 +1,19 @@
+/* 设置 body 和 html 的全屏，移除默认的边距，并设置背景色和文字颜色 */
+body, html {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: black; /* 背景设置为黑色 */
+  color: white; /* 文字颜色设置为白色 */
+  font-family: Arial, sans-serif; /* 使用常见的无衬线字体 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 设置 canvas 元素以充满整个屏幕 */
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block; /* 确保 canvas 不会有额外的空间或边距 */
+}
