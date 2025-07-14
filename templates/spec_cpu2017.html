@@ -20,15 +20,20 @@
 {% endblock %}
 
 {% block content %}
-<!--body-->
+<div class="glass-panel-header" id="header-panel">
     <h2>SPEC CPU2017 Benchmark Data</h2>
     <!--搜索框-->
     {{ forms.search_form(url_for('spec_cpu2017'), cpu_model) }}
+</div>
+<!--body-->
 <!--传入cpu_model,返回所有匹配cpu_model的数据，并分组显示。-->
 {% if cpu_model and grouped_data %}
+    <div class="table-wrapper">
+    <div class="glass-panel-table" id="table-panel">
+{#    <div class="table-wrapper">#}
     <table class="spec-cpu2017">
         <thead>
-            <tr>
+            <tr class="grouping-headers">
                 <th rowspan="2">CPU Model</th>
                 <th rowspan="2">Submitter</th>
                 <th rowspan="2">CPU Count</th>
@@ -44,12 +49,12 @@
                 <th rowspan="2">Compiler</th>
                 <th rowspan="2">Machine Name</th>
             </tr>
-        <tr>
-            <th>base</th><th>peak</th>
-            <th>base</th><th>peak</th>
-            <th>base</th><th>peak</th>
-            <th>base</th><th>peak</th>
-        </tr>
+            <tr >
+                <th>base</th><th>peak</th>
+                <th>base</th><th>peak</th>
+                <th>base</th><th>peak</th>
+                <th>base</th><th>peak</th>
+            </tr>
         </thead>
         <tbody>
 
@@ -82,7 +87,7 @@
                 </td>
 
                 <!-- 处理 SPECspeed(r)2017_int_peak -->
-                <td>
+                <td class="spec-cpu2017-peak">
                     {% if row['speed_int_peak'] %}
                         <a
                                 href="{{ row['speed_int_peak_url'] }}"
@@ -118,7 +123,7 @@
                 </td>
 
                 <!-- 处理 SPECspeed(r)2017_fp_peak -->
-                <td>
+                <td class="spec-cpu2017-peak">
                     {% if row['speed_fp_peak'] %}
                         <a
                                 href="{{ row['speed_fp_peak_url'] }}"
@@ -154,7 +159,7 @@
                 </td>
 
                 <!-- 处理 SPECrate(r)2017_int_peak -->
-                <td>
+                <td class="spec-cpu2017-peak">
                     {% if row['rate_int_peak'] %}
                         <a
                                 href="{{ row['rate_int_peak_url'] }}"
@@ -190,7 +195,7 @@
                 </td>
 
                 <!-- 处理 SPECrate(r)2017_fp_peak -->
-                <td>
+                <td class="spec-cpu2017-peak">
                     {% if row['rate_fp_peak'] %}
                         <a
                                 href="{{ row['rate_fp_peak_url'] }}"
@@ -221,9 +226,11 @@
             {% endfor %}
         </tbody>
     </table>
+    </div>
+    </div>
 <!--若没有匹配的cpu_model, 则提示没有该CPU的信息。-->
 {% elif cpu_model %}
-  <p class="none-value">No results found for "{{ cpu_model }}".</p>
+    <div class="glass-panel-header"><p class="none-value">No results found for "{{ cpu_model }}".</p></div>
 {% endif %}
 
 {% endblock %}

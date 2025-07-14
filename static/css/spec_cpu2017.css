@@ -2,55 +2,199 @@
 /* 导入 base.css 以继承其样式 */
 @import url('base.css');
 
-/*.spec-cpu2017 th:nth-child(1),*/
-/*.spec-cpu2017 td:nth-child(1) {*/
-/*  min-width: 150px ;*/
-/*}*/
-
-/*.spec-cpu2017 th:nth-child(2),*/
-/*.spec-cpu2017 td:nth-child(2) {*/
-/*  min-width: 120px ;*/
-/*}*/
-
-/*.spec-cpu2017 th:nth-child(3),*/
-/*.spec-cpu2017 td:nth-child(3) {*/
-/*  min-width: 80px ;*/
-/*}*/
-
-.spec-cpu2017 {
-  min-width: 800px;       /* 或按列数再调 */
-  table-layout: auto;
-  border-collapse: collapse;
+/* 确保外层有滚动容器 */
+.table-wrapper {
+  position: relative;   /* sticky 参考它来计算 top:0 */
+  flex: 1 1 auto;
+  overflow: visible;
+  margin-top: 1rem;     /* 让它不挨着搜索区 */
 }
 
+/* 表格基础 */
+.spec-cpu2017 {
+  width: auto;          /* 不强制铺满 */
+  min-width: 800px;     /* 根据实际列数再调整 */
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.spec-cpu2017 thead th {
+  position: sticky;
+  top: 0;                     /* 贴在 .table-wrapper 的内容区最顶端 */
+  z-index: 10;                /* 数值够大，确保盖过行内数据 */
+  padding: 0.5rem;            /* 根据喜好调整 */
+  text-align: left
+}
+
+.spec-cpu2017 thead tr.grouping-headers th {
+  z-index: 11;
+}
+
+
+
+
+
+
+
+/*!* 4) 关键：在 thead 上加伪元素，做渐变毛玻璃 *!*/
+/*.spec-cpu2017 thead tr:first-child::after {*/
+/*  top: 0px;*/
+/*  content: "";*/
+/*  position: absolute;*/
+/*  left: 0;*/
+/*  right: 0;*/
+/*  height: 40px;             !* 渐变高度，自行调整 *!*/
+/*  pointer-events: none;     !* 让点击穿透 *!*/
+
+/*  !* 先模糊：把底下滚动内容模糊 *!*/
+/*  backdrop-filter: blur(8px);*/
+/*  -webkit-backdrop-filter: blur(8px);*/
+
+/*  !* 再做渐变：从顶部不透明到底部透明 *!*/
+/*  mask-image: linear-gradient(*/
+/*    to bottom,*/
+/*    rgba(0,0,0,1) 0%,*/
+/*    rgba(0,0,0,0) 100%*/
+/*  );*/
+/*  -webkit-mask-image: linear-gradient(*/
+/*    to bottom,*/
+/*    rgba(0,0,0,1) 0%,*/
+/*    rgba(0,0,0,0) 100%*/
+/*  );*/
+
+/*  !* 备选：如果浏览器不支持 mask-image，你也可以用半透明白色渐变做覆盖 *!*/
+/*  !* background: linear-gradient(*/
+/*       to bottom,*/
+/*       rgba(255,255,255,0.9) 0%,*/
+/*       rgba(255,255,255,0) 100%*/
+/*     ); *!*/
+/*}*/
+
+/* 单元格基础 */
 .spec-cpu2017 th,
 .spec-cpu2017 td {
   padding: 4px 6px;
-  font-size: 0.85rem;
+  font-size: clamp(0.6rem, 1.2vw, 0.8rem);
   line-height: 1.2;
-  border: 1px solid #ccc;
   vertical-align: top;
   word-break: break-word;
   white-space: normal;
+  border: none;
 }
 
-/* 第一行分组表头 */
+/* ------------------------------
+   2) 一级分组表头：第一行
+   ------------------------------ */
 .spec-cpu2017 thead tr:first-child th {
-  padding: 8px 12px;        /* 比普通单行表头更宽松 */
-  vertical-align: bottom;
-  background-color: #e8e8e8;
+  position: sticky;
+  top: 0px;
+  z-index: 3;
+  padding: 8px 12px;
   text-align: center;
+  /* 这里强制一行表头的高度, 3rem */
+  height: 3rem;
+  /* 并把同样的变量存到根定制属性上 */
+  --group-row-height: 3rem;
 }
 
-/* 第二行子表头 */
+/* ------------------------------
+   3) 确保两行都保持它们原来的 padding／对齐
+   （可酌情调整）
+   ------------------------------ */
 .spec-cpu2017 thead tr:nth-child(2) th {
+  position: sticky;
+  top: 40px;                 /* 粘在导航底部 */
+  background: rgba(255, 255, 255, 0.4);
+  z-index: 1000;                /* 高于数据行 */
   padding: 4px 6px;
-  vertical-align: top;
-  background-color: #f2f2f2;
   text-align: center;
 }
 
-/* 将None值的文字设置为灰色 */
-.none-value {
-    color: #d3d3d3;  /* 浅灰色文字 */
+/* Peak 数据列 */
+.spec-cpu2017-peak {
+  color: #20a120;
 }
+
+/* None 值灰色 */
+.none-value {
+  color: #d3d3d3;
+}
+
+.glass-panel-table {
+  display: flex;
+  flex-direction: column;
+  height: 65vh;               /* 视口高度的 65% */
+  width: 90vw;
+  border-radius: 12px;
+
+  /* 1. 半透明底色 + 毛玻璃效果 */
+  /* background 决定整体的底色和透明度，rgba 中最后一个数值越小越透明 */
+  background: rgba(255, 255, 255, 0.5);
+  /* backdrop-filter 作用于容器背后的所有内容，实现模糊 */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); /* Safari 前缀 */
+
+  /* 2. 内外边距 */
+  /* padding 是容器内部内容与边框的距离，数值越大内容越不靠边 */
+  padding: 10px;
+  /* margin 是容器与其它元素（或页面边缘）的距离，上下 0px，左右 auto 居中 */
+  margin: 0px auto;
+
+  /* 3. 最大尺寸 & 滚动 */
+  /* max-width 限制最大宽度为视口宽度的 90%，防止过宽撑破屏幕 */
+  max-width: 90vw;
+  /* max-height 限制最大高度为视口高度的 80%，防止过高超出屏幕 */
+  max-height: 80vh;
+  /* overflow: auto；当内容超出 max- 容器时，自动出现滚动条 */
+  overflow: auto;
+
+  /* 4. 圆角 & 阴影 */
+  /* border-radius 决定圆角弧度，数值越大越圆润 */
+  border-radius: 12px;
+  /* box-shadow 添加阴影，格式：水平偏移 垂直偏移 模糊半径 扩散半径 颜色 */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-panel-header{
+  display: flex;
+  flex-direction: column;
+  height: 10vh;               /* 视口高度的 10% */
+  width: 90vw;
+  border-radius: 12px;
+
+  /* 1. 半透明底色 + 毛玻璃效果 */
+  /* background 决定整体的底色和透明度，rgba 中最后一个数值越小越透明 */
+  background: rgba(255, 255, 255, 0.15);
+  /* backdrop-filter 作用于容器背后的所有内容，实现模糊 */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); /* Safari 前缀 */
+
+  /* 2. 内外边距 */
+  /* padding 是容器内部内容与边框的距离，数值越大内容越不靠边 */
+  padding: 10px;
+  /* margin 是容器与其它元素（或页面边缘）的距离，上下 40px，左右 auto 居中 */
+  margin: 20px auto;
+
+  /* 3. 最大尺寸 & 滚动 */
+  /* max-width 限制最大宽度为视口宽度的 90%，防止过宽撑破屏幕 */
+  max-width: 90vw;
+  /* max-height 限制最大高度为视口高度的 80%，防止过高超出屏幕 */
+  max-height: 80vh;
+  /* overflow: auto；当内容超出 max- 容器时，自动出现滚动条 */
+  overflow: auto;
+
+  /* 4. 圆角 & 阴影 */
+  /* border-radius 决定圆角弧度，数值越大越圆润 */
+  border-radius: 12px;
+  /* box-shadow 添加阴影，格式：水平偏移 垂直偏移 模糊半径 扩散半径 颜色 */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 如果要兼容不支持 backdrop-filter 的浏览器，可增加降级 */
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-panel {
+    background: rgba(255,255,255,0.8);
+  }
+}
+
+

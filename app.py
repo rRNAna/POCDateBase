@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Jul 8, 2025.
+# Creation Date : Jul 11, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -31,7 +31,7 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.8.0                                                       #
+# VERSION: 1.9.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -162,13 +162,13 @@ def spec_cpu2017():
             # 对每个分组的数据进行处理，找出最大值并标记
             max_values[key] = {
                 'speed_int_base': max((r['speed_int_base'] or 0) for r in group),
-                'speed_int_peak': max((r['speed_int_base'] or 0) for r in group),
+                'speed_int_peak': max((r['speed_int_peak'] or 0) for r in group),
                 'speed_fp_base': max((r['speed_fp_base'] or 0) for r in group),
-                'speed_fp_peak': max((r['speed_fp_base'] or 0) for r in group),
+                'speed_fp_peak': max((r['speed_fp_peak'] or 0) for r in group),
                 'rate_int_base': max((r['rate_int_base'] or 0) for r in group),
-                'rate_int_peak': max((r['rate_int_base'] or 0) for r in group),
+                'rate_int_peak': max((r['rate_int_peak'] or 0) for r in group),
                 'rate_fp_base': max((r['rate_fp_base'] or 0) for r in group),
-                'rate_fp_peak': max((r['rate_fp_base'] or 0) for r in group)
+                'rate_fp_peak': max((r['rate_fp_peak'] or 0) for r in group)
             }
 
     return render_template(
