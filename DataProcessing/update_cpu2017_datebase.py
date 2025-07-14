@@ -98,6 +98,7 @@ def process_csv(input_csv_path: str):
         'Dell Inc.': 'Dell',
         'GIGA-BYTE TECHNOLOGY CO., LTD.': 'Gigabyte',
         'IEIT Systems Co., Ltd.': 'Inspur',
+        'Inspur Corporation': 'Inspur',
         'Inspur Electronic Information Industry Co., Ltd. (IEI)': 'Inspur',
         'Kaytus Systems Pte. Ltd.': 'Inspur',
         'Lenovo Global Technology': 'Lenovo',
@@ -108,6 +109,8 @@ def process_csv(input_csv_path: str):
         'Tyrone Systems': 'Tyron',
         'Epsylon Sp. z o.o. Sp. Komandytowa': 'Epsylon',
         'Fujitsu': 'Fujitsu',
+        'Hewlett Packard Enterprise': 'HPE',
+
 
     }
 
