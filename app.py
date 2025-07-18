@@ -6,7 +6,6 @@
 # Author: rRNA
 # Description   :
 #
-#
 ###########################################################################################################
 from dotenv import load_dotenv
 import os
@@ -18,9 +17,6 @@ from flask import Flask, render_template, request, redirect, render_template_str
     current_app, session, flash
 from flask_bootstrap import Bootstrap
 from functools import wraps
-
-
-
 from sqlalchemy.orm.session import Session
 
 ########################################################################
@@ -30,7 +26,7 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 1.9.0                                                       #
+# VERSION: 2.0.0                                                       #
 #                                                                      #
 ########################################################################
 

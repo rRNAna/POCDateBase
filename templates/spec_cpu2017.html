@@ -64,7 +64,13 @@
             {% for row in group %}
             <tr>
                 <td>{{ row['cpu_model'] }}</td>
-                <td>{{ row['submitter'] }}</td>
+                <td>
+                    {% if row['submitter'] == 'H3C' %}
+                        <a class="highlight">{{ row['submitter'] }}</a>
+                    {% else %}
+                        {{ row['submitter'] }}
+                    {% endif %}
+                </td>
                 <td>{{ row['cpu_count'] }}</td>
 
                 <!-- 处理 SPECspeed(r)2017_int_base -->
