@@ -106,7 +106,7 @@ def process_csv(input_csv_path: str):
         'xFusion': 'xFusion',
         'New H3C Technologies Co., Ltd.': 'H3C',
         'Quanta Cloud Technology': 'Quanta',
-        'Tyrone Systems': 'Tyron',
+        'Tyrone Systems': 'Tyrone',
         'Epsylon Sp. z o.o. Sp. Komandytowa': 'Epsylon',
         'Fujitsu': 'Fujitsu',
         'Hewlett Packard Enterprise': 'HPE',

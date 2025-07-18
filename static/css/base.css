@@ -51,7 +51,7 @@ body {
   display: flex;
   flex-direction: column;
   /*background-color: #855d25;*/
-  background-image: url('/static/img/26-Tahoe-Light.PNG');
+  background-image: url('/static/img/earth-1.jpg');
   background-repeat: no-repeat;        /* 不平铺 */
   background-position: center center; /* 居中对齐 */
   background-attachment: fixed;       /* 固定在视窗，页面滚动它不动 */
@@ -133,6 +133,18 @@ body {
     background: rgba(255,255,255,0.8);
   }
 }
+
+.glass-panel-table::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+
+.glass-panel-header::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 
 /* —— 留出顶部导航高度 —— */
 main.content {
