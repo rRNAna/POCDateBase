@@ -110,8 +110,6 @@ def process_csv(input_csv_path: str):
         'Epsylon Sp. z o.o. Sp. Komandytowa': 'Epsylon',
         'Fujitsu': 'Fujitsu',
         'Hewlett Packard Enterprise': 'HPE',
-
-
     }
 
     # 对应基准名到数据库字段名
