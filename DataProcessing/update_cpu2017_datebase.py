@@ -112,6 +112,7 @@ def process_csv(input_csv_path: str):
         'Hewlett Packard Enterprise': 'HPE',
     }
 
+
     # 对应基准名到数据库字段名
     benchmark_map_base = {
         "CINT2017": "SPECspeed(r)2017_int_base",
