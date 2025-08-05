@@ -117,10 +117,6 @@ def spec_cpu2017():
 
     rows = []
     if cpu_input:
-        # 调试：打印所有可选的 cpu_model 值
-        # cursor.execute("SELECT DISTINCT cpu_model FROM CPU2017_database")
-        # all_models = [r['cpu_model'].strip() for r in cursor.fetchall()]
-        # current_app.logger.info(f"Available cpu_model values: {all_models}")
 
         # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
         pattern = f"%{cpu_input}%"
