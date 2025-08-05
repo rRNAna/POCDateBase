@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Jul 14, 2025.
+# Creation Date : Aug 5, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -166,7 +166,8 @@ def spec_cpu2017():
         'spec_cpu2017.html',
         cpu_model=cpu_input,
         grouped_data=grouped_data,
-        max_values=max_values
+        max_values=max_values,
+        submitter_filter=submitter_filter
     )
 
 
@@ -578,8 +579,3 @@ def show_cvt_mlc_run(run_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080, debug=True)
-
-
-
-
-
