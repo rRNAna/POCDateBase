@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : app.py
-# Creation Date : Aug 5, 2025.
+# Creation Date : Aug 6, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -18,7 +18,7 @@ from flask import Flask, render_template, request, redirect, render_template_str
 from flask_bootstrap import Bootstrap
 from functools import wraps
 from sqlalchemy.orm.session import Session
-
+from collections import defaultdict
 ########################################################################
 #                                                                      #
 #                                                                      #
@@ -26,7 +26,7 @@ from sqlalchemy.orm.session import Session
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 2.0.0                                                       #
+# VERSION: 2.1.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -103,71 +103,82 @@ def index():
 
 
 # SPEC CPU2017 数据显示路由
+
+
 @app.route('/spec_cpu2017', methods=['GET'])
 def spec_cpu2017():
-    cpu_input = (request.args.get('cpu_model') or '').strip()
-    current_app.logger.info(f"User search input: '{cpu_input}'")
-
+    cpu_input = request.args.get('cpu_model', '').strip()
+    # 读全表
     conn = get_db_connection()
-
-    if conn is None:
-        return "Database connection error", 500
-
     cursor = conn.cursor()
-
-    rows = []
-    if cpu_input:
-
-        # 构造模糊匹配模式，两边都用 %，并去掉字段前后空格后再比对
-        pattern = f"%{cpu_input}%"
-        current_app.logger.info(f"Querying with pattern: '{pattern}'")
-
-        cursor.execute(
-            """
-            SELECT *
-            FROM CPU2017_database
-            WHERE TRIM(cpu_model) LIKE ? COLLATE NOCASE
-            ORDER BY cpu_model DESC, submitter DESC
-            """,
-            (pattern,)
-        )
-        rows = cursor.fetchall()
-
+    cursor.execute(
+        "SELECT * FROM CPU2017_database "
+        "ORDER BY cpu_model DESC, cpu_count DESC"
+    )
+    all_rows = cursor.fetchall()
     conn.close()
 
-    # 按照 CPU Model 、 CPU Count 和 Compiler 分组
-    grouped_data = {}
+    # 全量分组，计算 max_values
+    STABLE_KEYS = ['cpu_model', 'cpu_count', 'compiler']
+    METRICS = [
+        'speed_int_base',  'speed_int_peak',
+        'speed_fp_base',   'speed_fp_peak',
+        'rate_int_base',   'rate_int_peak',
+        'rate_fp_base',    'rate_fp_peak'
+    ]
+
+    # 分组
+    all_groups = defaultdict(list)
+    for r in all_rows:
+        # 把 compiler 做家族化处理
+        comp_full = r['compiler'] or ''
+        comp_family = comp_full.split()[0] if comp_full else ''
+        key = (r['cpu_model'], r['cpu_count'], comp_family)
+        all_groups[key].append(r)
+
+    # 算 max
     max_values = {}
+    for key, grp in all_groups.items():
+        mv = {}
+        for col in METRICS:
+            vals = [row[col] for row in grp if row[col] is not None]
+            mv[col] = max(vals) if vals else None
+        max_values[key] = mv
 
-    if cpu_input and rows:
-        for row in rows:
-            # 按照 CPU Model 、 CPU Count 和 Compiler_family 分组
+    # 根据 cpu_input 过滤出要显示的行
+    display_rows = []
+    if cpu_input:
+        if cpu_input.isdigit():
+            # 数字只当 cpu_model 模糊匹配
+            for r in all_rows:
+                if cpu_input in r['cpu_model']:
+                    display_rows.append(r)
+        else:
+            # 字母/混合当厂商 或 compiler_family 匹配
+            kw = cpu_input.lower()
+            for r in all_rows:
+                if (kw in (r['submitter']    or '').lower()
+                 or kw in (r['compiler']     or '').lower()
+                 or kw in (r['machine_name'] or '').lower()):
+                    display_rows.append(r)
+    else:
+        # 没输入就不显示任何数据
+        display_rows = []
 
-            compiler_full = row['compiler'] or ""
-            # 取空格前的第一个词作为“家族”，如 “AOCC” 或 “GCC”
-            compiler_family = compiler_full.split()[0] if compiler_full else ""
+    # 用过滤后的 display_rows 再分组，用于渲染
+    grouped_data = defaultdict(list)
+    for r in display_rows:
+        comp_full = r['compiler'] or ''
+        comp_family = comp_full.split()[0] if comp_full else ''
+        key = (r['cpu_model'], r['cpu_count'], comp_family)
+        grouped_data[key].append(r)
 
-            key = (row['cpu_model'], row['cpu_count'], compiler_family)
-            grouped_data.setdefault(key, []).append(row)
-        for key, group in grouped_data.items():
-            # 对每个分组的数据进行处理，找出最大值并标记
-            max_values[key] = {
-                'speed_int_base': max((r['speed_int_base'] or 0) for r in group),
-                'speed_int_peak': max((r['speed_int_peak'] or 0) for r in group),
-                'speed_fp_base': max((r['speed_fp_base'] or 0) for r in group),
-                'speed_fp_peak': max((r['speed_fp_peak'] or 0) for r in group),
-                'rate_int_base': max((r['rate_int_base'] or 0) for r in group),
-                'rate_int_peak': max((r['rate_int_peak'] or 0) for r in group),
-                'rate_fp_base': max((r['rate_fp_base'] or 0) for r in group),
-                'rate_fp_peak': max((r['rate_fp_peak'] or 0) for r in group)
-            }
-
+    # 渲染
     return render_template(
         'spec_cpu2017.html',
         cpu_model=cpu_input,
         grouped_data=grouped_data,
-        max_values=max_values,
-        submitter_filter=submitter_filter
+        max_values=max_values
     )
 
 

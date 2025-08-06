@@ -100,4 +100,46 @@
   height: 10vh;               /* 视口高度的 10% */
 }
 
+.btn-export {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-export:hover {
+    background-color: #555;
+}
 
+/* —— 打印模式，展开整个容器 —— */
+@media print {
+    /* 隐藏其他 UI */
+    header, footer, .search-bar, #btn-print-pdf {
+        display: none !important;
+    }
+    /* 让包裹表格的两层容器都取消滚动和固定高度 */
+  .table-wrapper,
+  #table-panel {
+      position: static     !important;
+      height: auto         !important;
+      max-height: none     !important;
+      overflow: visible    !important;
+      background: none     !important;
+      box-shadow: none     !important;
+  }
+
+  /* 表格铺满可用宽度 */
+  .table-wrapper table,
+  #table-panel table {
+      width: 100%          !important;
+  }
+
+  /* 确保表头重复打印到每页 */
+  thead { display: table-header-group !important; }
+  tfoot { display: table-footer-group !important; }
+
+  /* 调整打印页边距 */
+  @page { margin: 1cm; }
+}

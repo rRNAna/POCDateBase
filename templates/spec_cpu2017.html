@@ -14,9 +14,9 @@
         cursor:auto;
     }
     .highlight {
-    color: #EE220C;
-    font-weight: bold;
-}
+        color: #EE220C;
+        font-weight: bold;
+    }
 {% endblock %}
 
 {% block content %}
@@ -28,9 +28,9 @@
 <!--body-->
 <!--传入cpu_model,返回所有匹配cpu_model的数据，并分组显示。-->
 {% if cpu_model and grouped_data %}
-    <div class="table-wrapper">
+    <div class="table-wrapper" id="table-container">
     <div class="glass-panel-table" id="table-panel">
-    <table class="spec-cpu2017">
+    <table class="spec-cpu2017" id="spec-cpu2017">
         <thead>
             <tr >
                 <th rowspan="2">CPU Model</th>
@@ -231,6 +231,7 @@
             {% endfor %}
         </tbody>
     </table>
+    <button id="btn-print-pdf" class="btn-export">Export PDF</button>
     </div>
     </div>
 <!--若没有匹配的cpu_model, 则提示没有该CPU的信息。-->
@@ -238,4 +239,62 @@
     <div class="glass-panel-header"><p class="none-value">No results found for "{{ cpu_model }}".</p></div>
 {% endif %}
 
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript" src="{{ url_for('static', filename='js/download-csv.js') }}"></script>
+    <script>
+        const wrapper = document.getElementById('table-container');
+        const panel   = document.getElementById('table-panel');
+
+        // 打印前：取消滚动限制、固定高度
+        window.onbeforeprint = () => {
+            if (wrapper) {
+                wrapper._oldStyle = {
+                    position:   wrapper.style.position,
+                    height:     wrapper.style.height,
+                    maxHeight:  wrapper.style.maxHeight,
+                    overflow:   wrapper.style.overflow,
+                    background: wrapper.style.background,
+                    boxShadow:  wrapper.style.boxShadow
+                };
+                Object.assign(wrapper.style, {
+                    position:   'static',
+                    height:     'auto',
+                    maxHeight:  'none',
+                    overflow:   'visible',
+                    background: 'none',
+                    boxShadow:  'none'
+                });
+            }
+            if (panel) {
+                panel._oldStyle = {
+                    position:  panel.style.position,
+                    height:    panel.style.height,
+                    overflow:  panel.style.overflow
+                };
+                Object.assign(panel.style, {
+                    position:  'static',
+                    height:    'auto',
+                    overflow:  'visible'
+                });
+            }
+        };
+
+        // 打印后：恢复原来的样式
+        window.onafterprint = () => {
+            if (wrapper && wrapper._oldStyle) {
+                Object.assign(wrapper.style, wrapper._oldStyle);
+                delete wrapper._oldStyle;
+            }
+            if (panel && panel._oldStyle) {
+                Object.assign(panel.style, panel._oldStyle);
+                delete panel._oldStyle;
+            }
+        };
+
+        // “导出 PDF” 按钮触发打印
+        document.getElementById('btn-print-pdf')
+        .addEventListener('click', () => window.print());
+    </script>
 {% endblock %}

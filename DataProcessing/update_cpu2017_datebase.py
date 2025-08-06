@@ -2,7 +2,7 @@
 #########################################################################################################
 #
 # Filename      : update_cpu2017_datenase.py
-# Creation Date : Mar 15, 2025.
+# Creation Date : Aug 6, 2025.
 # Author: rRNA
 # Description   :
 #
@@ -18,6 +18,7 @@ import pandas as pd
 
 from datetime import datetime
 from sqlalchemy import create_engine, MetaData, and_
+from urllib.parse import quote
 
 ########################################################################
 #                                                                      #
@@ -35,12 +36,34 @@ from sqlalchemy import create_engine, MetaData, and_
 # —— 全局配置 ——
 # 需要下载的全部 CPU 型号列表
 CPU_MODEL_LIST = [
+    # AMD 9004 processors
     "9754", "9734", "9654", "9634", "9554", "9534", "9454",
     "9354", "9334", "9254", "9224", "9124", "9474F", "9374F",
-    "9274F", "9174F", "9684X", "9384X", "9184X", "9965",
-    "9845", "9825", "9755", "9745", "9655", "9645", "9555",
-    "9535", "9455", "9355", "9335", "9255", "9135", "9115",
-    "9015", "9575F", "9475F", "9375F", "9275F", "9175F"
+    "9274F", "9174F", "9684X", "9384X", "9184X",
+    # AMD 9005 processors
+    "9965", "9845", "9825", "9755", "9745", "9655", "9645",
+    "9555", "9535", "9455", "9355", "9335", "9255", "9135",
+    "9115", "9015", "9575F", "9475F", "9375F", "9275F", "9175F",
+    # intel 5 processors
+    "3508U", "5512U", "5515+", "5520+", "6526Y", "6530",
+    "6534", "6538N", "6538Y+", "6542Y", "6544Y", "6548N",
+    "6548Y+", "6554S", "6558Q", "8558", "8558P", "8558U",
+    "8562Y+", "8568Y+", "8570", "8571N", "8580", "8581V",
+    "8592+", "8592V", "8593Q", "4509Y", "4510", "4510T",
+    "4514Y", "4516Y+",
+    # intel 6 processors
+    "6962P", "6978P", "6732P", "6774P", "6776P", "6716P-B",
+    "6745P", "6315P", "6325P", "6333P", "6337P", "6349P",
+    "6353P", "6357P", "6369P", "6503P-B", "6505P", "6507P",
+    "6511P", "6513P-B", "6515P", "6516P-B", "6517P", "6520P",
+    "6521P", "6523P-B", "6527P", "6530P", "6533P-B", "6543P-B",
+    "6546P-B", "6553P-B", "6556P-B", "6563P-B", "6506P-B",
+    "6714P", "6724P", "6726P-B", "6728P", "6730P", "6731P",
+    "6736P", "6737P", "6737P", "6740P", "6741P", "6747P",
+    "6748P", "6760P", "6761P", "6767P", "6768P", "6781P",
+    "6787P", "6788P", "6944P", "6952P", "6960P", "6972P",
+    "6979P", "6980P", "6710E", "6731E", "6740E", "6746E",
+    "6756E", "6766E", "6780E"
 ]
 DOWNLOAD_DIR = './downloads'  # 下载地址
 DATABASE_URL = 'sqlite:///../database.db'  # 数据库地址
@@ -56,30 +79,54 @@ def download_spec_csv(download_dir: str):
 
     # 确保目录存在
     os.makedirs(download_dir, exist_ok=True)
+    BASE_URL = (
+        "https://www.spec.org/cgi-bin/osgresults"
+        "?conf=cpu2017&op=fetch&field=CPU&pattern={pattern}&format=csvdump"
+    )
     for cpu_model in CPU_MODEL_LIST:
-        url = (
-            f"https://www.spec.org/cgi-bin/osgresults"
-            f"?conf=cpu2017&op=fetch&field=CPU&pattern={cpu_model}&format=csvdump"
-        )
+        # 对 cpu_model 做百分号编码（把 "+"、空格等都转成 %2B、%20 …）
+        encoded = quote(cpu_model, safe='')
+        # 构造URL
+        url = BASE_URL.format(pattern=encoded)
+        # 下载
         logging.info(f"下载 CPU {cpu_model} 的 CSV：{url}")
 
-        # 发起请求，使用流模式
-        resp = requests.get(url, timeout=30, stream=True)
-        resp.raise_for_status()
+        try:
+            # 发起请求，使用流模式
+            resp = requests.get(url, timeout=30, stream=True)
+            # 状态码检查
+            if resp.status_code != 200:
+                logging.warning(f"  → Skipped {cpu_model}: HTTP {resp.status_code}")
+                continue
 
-        # 构造文件名：型号+时间戳
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        cpu_model = url.split('pattern=')[-1].split('&')[0]
-        filename  = f"spec_results_{cpu_model}_{timestamp}.csv"
-        filepath  = os.path.join(download_dir, filename)
+            text = resp.text
 
-        # 写入二进制文件
-        with open(filepath, 'wb') as f:
-            for chunk in resp.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+            # 如果页面里含“No Matches Found”字样，就说明官网还没数据
+            if "No Matches Found" in text:
+                logging.warning(f"  → No data for {cpu_model}: 'No Matches Found'")
+                continue
 
-        logging.info(f"Downloaded SPEC CSV for {cpu_model} to {filepath}")
+            # 此外再加一个简单的大小或 HTML 判断，防止非 CSV
+            if len(resp.content) < 200 or text.lstrip().startswith("<html"):
+                logging.warning(f"  → Empty or invalid CSV for {cpu_model}")
+                continue
+
+            # 构造文件名：型号+时间戳
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            cpu_model = url.split('pattern=')[-1].split('&')[0]
+            filename = f"spec_results_{cpu_model}_{timestamp}.csv"
+            filepath = os.path.join(download_dir, filename)
+
+            # 写入二进制文件
+            with open(filepath, 'wb') as f:
+                for chunk in resp.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+
+            logging.info(f"Downloaded SPEC CSV for {cpu_model} to {filepath}")
+
+        except Exception as e:
+            logging.error(f"  → Failed {cpu_model}: {e}")
 
     merge_and_cleanup(download_dir, os.path.join(DOWNLOAD_DIR, 'merged.csv'))
     output_csv_path = download_dir + '/merged.csv'
