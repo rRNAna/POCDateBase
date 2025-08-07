@@ -7,6 +7,8 @@
 # Description   :
 #
 ###########################################################################################################
+import re
+
 from dotenv import load_dotenv
 import os
 import functools
@@ -25,7 +27,7 @@ from collections import defaultdict
 #                                                                      #
 # PURPOSE: See description above.                                      #
 #                                                                      #
-# VERSION: 2.1.0                                                       #
+# VERSION: 2.2.0                                                       #
 #                                                                      #
 ########################################################################
 
@@ -94,7 +96,7 @@ def get_db_connection():
 @app.route('/')
 def index():
     return render_template('base.html',
-                           version='v2.1.0',
+                           version='v2.2.0',
                            author='rRNA',
                            contact='rasdasto857@gmail.com',
                            description='这是 POC_DataBase 的信息页。'
@@ -106,7 +108,11 @@ def index():
 
 @app.route('/spec_cpu2017', methods=['GET'])
 def spec_cpu2017():
-    cpu_input = request.args.get('cpu_model', '').strip()
+    # 接收用户在搜索框的输入，支持逗号分隔的多个 CPU 型号
+    raw = request.args.get('cpu_model', '').strip()
+    # 用正则 [\s,]+ 匹配任意空白或逗号，将它们当分隔符
+    cpu_inputs = [tok for tok in re.split(r'[\s,]+', raw) if tok]
+
     # 读全表
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -146,20 +152,30 @@ def spec_cpu2017():
 
     # 根据 cpu_input 过滤出要显示的行
     display_rows = []
-    if cpu_input:
-        if cpu_input.isdigit():
-            # 数字只当 cpu_model 模糊匹配
-            for r in all_rows:
-                if cpu_input in r['cpu_model']:
+    if cpu_inputs:
+        # 如果全是数字，做子串匹配；否则当关键字匹配 submitter/compiler/machine_name
+        is_all_digit = all(si.isdigit() for si in cpu_inputs)
+        kw_list = [si.lower() for si in cpu_inputs]
+        for r in all_rows:
+            if is_all_digit:
+                if any(kw in r['cpu_model'] for kw in cpu_inputs):
                     display_rows.append(r)
-        else:
-            # 字母/混合当厂商 或 compiler_family 匹配
-            kw = cpu_input.lower()
-            for r in all_rows:
-                if (kw in (r['submitter']    or '').lower()
-                 or kw in (r['compiler']     or '').lower()
-                 or kw in (r['machine_name'] or '').lower()):
+            else:
+                # 字母/混合当厂商 或 compiler_family 匹配
+                text = ' '.join([
+                    (r['submitter'] or ''),
+                    (r['compiler'] or ''),
+                    (r['machine_name'] or '')
+                ]).lower()
+                if any(kw in text for kw in kw_list):
                     display_rows.append(r)
+
+            # kw = cpu_inputs.lower()
+            # for r in all_rows:
+            #     if (kw in (r['submitter']    or '').lower()
+            #      or kw in (r['compiler']     or '').lower()
+            #      or kw in (r['machine_name'] or '').lower()):
+            #         display_rows.append(r)
     else:
         # 没输入就不显示任何数据
         display_rows = []
@@ -175,7 +191,7 @@ def spec_cpu2017():
     # 渲染
     return render_template(
         'spec_cpu2017.html',
-        cpu_model=cpu_input,
+        cpu_model=cpu_inputs,
         grouped_data=grouped_data,
         max_values=max_values
     )

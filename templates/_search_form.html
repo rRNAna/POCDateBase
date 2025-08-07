@@ -6,15 +6,20 @@
 </head>
 <body>
   {% macro search_form(action_url, value='') -%}
-  <form action="{{ action_url }}" method="get" class="search-bar">
-    <input
-      type="text"
-      name="cpu_model"
-      placeholder="Enter CPU Model"
-      value="{{ value }}"
-    >
-  <button type="submit">Search</button>
-  </form>
+      {% if value is iterable and value is not string %}
+        {% set display_value = value | join(', ') %}
+      {% else %}
+        {% set display_value = value %}
+      {% endif %}
+      <form action="{{ action_url }}" method="get" class="search-bar">
+            <input
+                    type="text"
+                    name="cpu_model"
+                    placeholder="Enter CPU Model"
+                    value="{{ display_value }}"
+            >
+            <button type="submit">Search</button>
+      </form>
   {%- endmacro %}
 </body>
 </html>
