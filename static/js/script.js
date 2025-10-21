@@ -1,11 +1,17 @@
-// 当页面滚动时，检查滚动的距离并修改导航栏样式
-window.onscroll = function() {
-    let navbar = document.getElementById("navbar");
+let lastScrollTop = 0; // 用于保存上一次的滚动位置
+const navbar = document.querySelector('nav'); // 获取导航栏元素
 
-    // 如果页面滚动超过50px，变小导航栏
-    if (window.pageYOffset > 50) {
-        navbar.classList.add("smaller");
-    } else {
-        navbar.classList.remove("smaller");
+// 监听滚动事件
+window.addEventListener('scroll', function() {
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    if (scrollTop > lastScrollTop) {
+        // 向下滚动时，隐藏导航栏
+        navbar.style.top = '-60px'; // 调整隐藏的高度
+        } else {
+        // 向上滚动时，显示导航栏
+        navbar.style.top = '0';
     }
-};
+
+    // 更新最后一次的滚动位置
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // 防止为负值
+});

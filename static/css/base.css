@@ -26,7 +26,7 @@ nav {
 }
 
 nav a {
-  color: white;
+  color: #282828;
   text-decoration: none;
   font-size: 24px;
   transition: color 0.3s;
@@ -51,7 +51,7 @@ nav.fixed-glass {
 body {
   display: flex;
   flex-direction: column;
-  background-image: url('/static/img/earth-1.jpg'); /* 背景图片 */
+  /*background-image: url('/static/img/earth-1.jpg'); !* 背景图片 *!*/
   background-repeat: no-repeat;        /* 不平铺 */
   background-position: center center; /* 居中对齐 */
   background-attachment: fixed;       /* 固定在视窗，页面滚动它不动 */

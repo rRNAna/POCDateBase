@@ -26,6 +26,11 @@
   text-align: left
 }
 
+/*高亮整行*/
+.highlight-row {
+    background-color: lightgrey;
+}
+
 /* 4) 关键：在 thead 上加伪元素，做渐变毛玻璃 */
 .spec-cpu2017 thead tr:first-child::after {
   top: 0px;

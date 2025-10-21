@@ -62,7 +62,7 @@
                 <td colspan="8"><strong>{{ cpu_key[0] }} - {{ cpu_key[1] }}</strong></td>
             </tr>
             {% for row in group %}
-            <tr>
+            <tr class="{% if row['submitter'] == 'H3C' %}highlight-row{% endif %}">
                 <td>{{ row['cpu_model'] }}</td>
                 <td>
                     {% if row['submitter'] == 'H3C' %}
@@ -226,7 +226,7 @@
                     {% endif %}
                 </td>
 
-            </tr>
+            </trclass>
             {% endfor %}
             {% endfor %}
         </tbody>
